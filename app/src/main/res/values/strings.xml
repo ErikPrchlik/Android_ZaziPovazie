@@ -43,4 +43,9 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+
+    <string name="communication_error">Something went wrong during COMMUNICATION</string>
+    <string name="communication_exception">Something went wrong during COMMUNICATION Exception</string>
+    <string name="no_data">Something went wrong - NO DATA</string>
+
 </resources>

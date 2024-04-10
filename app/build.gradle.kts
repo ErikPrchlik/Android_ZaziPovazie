@@ -70,4 +70,10 @@ dependencies {
 
     // Maps SDK for Android
     implementation(libs.play.services.maps)
+
+    // HTTP Communication
+    implementation(libs.logging.interceptor)
+
+    // Koin
+    implementation(libs.koin.android.v320)
 }
