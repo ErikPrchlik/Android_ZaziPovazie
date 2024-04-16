@@ -1,7 +1,7 @@
 package sk.sivy_vlk.zazipovazie.model
 
-import com.google.android.gms.maps.model.LatLng
 import java.io.File
+import java.io.Serializable
 
 data class MapObject(
     val id: Int,
@@ -9,7 +9,7 @@ data class MapObject(
     val category: String,
     val description: String,
     val image: String,
-    val latLng: LatLng,
+    val latLng: ParcelableLatLng,
     var iconUrl: String? = null,
     var icon: File? = null
-)
+): Serializable

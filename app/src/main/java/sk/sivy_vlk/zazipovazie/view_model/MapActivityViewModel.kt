@@ -14,6 +14,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import sk.sivy_vlk.zazipovazie.R
 import sk.sivy_vlk.zazipovazie.communication.CommunicationResult
 import sk.sivy_vlk.zazipovazie.model.MapObject
+import sk.sivy_vlk.zazipovazie.model.ParcelableLatLng
 import sk.sivy_vlk.zazipovazie.repository.IKMZInputStreamRepository
 import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
@@ -130,7 +131,7 @@ class MapActivityViewModel(private val app: Application,
         var category = ""
         var description = ""
         var image = ""
-        var latLng: LatLng? = null
+        var latLng: ParcelableLatLng? = null
         var inStyle = false
         var inIcon = false
         var styleId = ""
@@ -148,7 +149,7 @@ class MapActivityViewModel(private val app: Application,
                         placeMarkName = parser.nextText().trim()
                     } else if (tagName.equals("coordinates", ignoreCase = true) && inPlaceMark) {
                         val coordinates = parser.nextText().trim().split(",")
-                        latLng = LatLng(coordinates[1].toDouble(), coordinates[0].toDouble())
+                        latLng = ParcelableLatLng(coordinates[1].toDouble(), coordinates[0].toDouble())
                     } else if (tagName.equals("description", ignoreCase = true) && inPlaceMark) {
                         description = parser.nextText().trim()
                         description = description.replace(Regex("<!\\[CDATA\\[(.*?)]]>"), "$1")

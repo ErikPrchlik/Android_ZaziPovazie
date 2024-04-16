@@ -1,5 +1,6 @@
 package sk.sivy_vlk.zazipovazie
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
@@ -19,10 +20,13 @@ import sk.sivy_vlk.zazipovazie.databinding.ActivityMainBinding
 import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
 import sk.sivy_vlk.zazipovazie.view_model.State
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import sk.sivy_vlk.zazipovazie.activity.MapObjectDetailActivity
+import sk.sivy_vlk.zazipovazie.model.MapObject
 import java.io.FileInputStream
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    private var mapObjects: List<MapObject> = listOf()
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var googleMap: GoogleMap
@@ -71,6 +75,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         observeState()
 
+        googleMap.setOnMarkerClickListener { marker ->
+            val id = marker.tag as Int
+            val mapObject = mapObjects.firstOrNull { it.id == id }
+            val intent = Intent(this, MapObjectDetailActivity::class.java)
+            intent.putExtra("MAP_OBJECT", mapObject)
+            startActivity(intent)
+            true
+        }
+
     }
 
     private fun observeState() {
@@ -78,10 +91,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             viewModel.mapObjectsState.collect { state ->
                 when (state) {
                     is State.Success -> {
-                        state.data.forEach {
+                        mapObjects = state.data
+                        mapObjects.forEach {
+                            val latLng = LatLng(it.latLng.latitude, it.latLng.longitude)
                             val markerOptions = MarkerOptions()
                                 .title(it.name)
-                                .position(it.latLng)
+                                .position(latLng)
                             if (it.icon != null) {
                                 val fileInputStream = FileInputStream(it.icon)
                                 val bitmap = BitmapFactory.decodeStream(fileInputStream)
@@ -92,7 +107,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                             }
                             googleMap.addMarker(
                                 markerOptions
-                            )
+                            )?.tag = it.id
                         }
                     }
                     is State.Error -> {
