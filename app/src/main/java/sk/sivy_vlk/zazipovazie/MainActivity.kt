@@ -1,5 +1,6 @@
 package sk.sivy_vlk.zazipovazie
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.launch
@@ -17,6 +19,7 @@ import sk.sivy_vlk.zazipovazie.databinding.ActivityMainBinding
 import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
 import sk.sivy_vlk.zazipovazie.view_model.State
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import java.io.FileInputStream
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -76,10 +79,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 when (state) {
                     is State.Success -> {
                         state.data.forEach {
+                            val markerOptions = MarkerOptions()
+                                .title(it.name)
+                                .position(it.latLng)
+                            if (it.icon != null) {
+                                val fileInputStream = FileInputStream(it.icon)
+                                val bitmap = BitmapFactory.decodeStream(fileInputStream)
+                                fileInputStream.close()
+                                // Create a BitmapDescriptor from the bitmap
+                                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+                                markerOptions.icon(bitmapDescriptor)
+                            }
                             googleMap.addMarker(
-                                MarkerOptions()
-                                    .title(it.name)
-                                    .position(it.latLng)
+                                markerOptions
                             )
                         }
                     }
