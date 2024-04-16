@@ -71,6 +71,7 @@ class MapActivityViewModel(private val app: Application,
                         iconImages = findIconImages(File(app.applicationContext.cacheDir, "temp"))
                         val data = readKMZFile(inputStreamCopy)
                         val kmlContent = data?.let { extractKMLFromKMZ(it) }
+                        Log.d("LogMapActivityViewModel", "KML content: $kmlContent")
                         val mapObjects = kmlContent?.let { parseKMLContent(it) }
                         if (!mapObjects.isNullOrEmpty()) {
                             _mapObjectsState.emit(State.Success(mapObjects))
@@ -154,10 +155,12 @@ class MapActivityViewModel(private val app: Application,
                         description = parser.nextText().trim()
                         description = description.replace(Regex("<!\\[CDATA\\[(.*?)]]>"), "$1")
                         description = description.replace(Regex("<br>"), "\n")
-                    } else if (tagName.equals("Data name=\"gx_media_links\"", ignoreCase = true) && inPlaceMark) {
+                    } else if (tagName.equals("Data", ignoreCase = true) && inPlaceMark) {
                         inLink = true
+                        Log.d("LogMapActivityViewModel", "Link")
                     } else if (tagName.equals("value", ignoreCase = true) && inPlaceMark && inLink) {
                         image = parser.nextText().trim()
+                        Log.d("LogMapActivityViewModel", "Image: $image")
                     } else if (tagName.equals("styleUrl", ignoreCase = true) && inPlaceMark) {
                         category = parser.nextText().trim()
                         category = category.replace(Regex("#"), "")

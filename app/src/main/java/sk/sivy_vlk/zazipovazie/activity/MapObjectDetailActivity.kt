@@ -17,14 +17,29 @@ class MapObjectDetailActivity : AppCompatActivity() {
         binding = ActivityMapObjectDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
+        setSupportActionBar(binding.appBarLayout.toolbar)
+        supportActionBar!!.setDisplayShowTitleEnabled(true)
 
         val mapObject = intent.serializable("MAP_OBJECT") as? MapObject
         if (mapObject != null) {
             Log.d("LogMapObjectDetailActivity", "MapObject ${mapObject.name}")
+            binding.placeObjectContent.mapObjectName.text = mapObject.name
+            val descriptionSplit = mapObject.description.split("\n")
+            val description = StringBuilder()
+            descriptionSplit.forEach {
+                if (!it.contains("<img")) {
+                    description.append(it)
+                }
+                description.append("\n")
+            }
+            binding.placeObjectContent.mapObjectDescription.text = description.toString()
+            binding.appBarLayout.photoView.setImages(supportFragmentManager, lifecycle, listOf(mapObject.image))
         } else {
             Log.e("LogMapObjectDetailActivity", "MapObject is null")
         }
+
+//        if (!mapObject!!.image.isNullOrEmpty()) {
+//        }
 
     }
 

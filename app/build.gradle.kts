@@ -76,4 +76,7 @@ dependencies {
 
     // Koin
     implementation(libs.koin.android.v320)
+
+    // Photos
+    implementation(libs.picasso)
 }
