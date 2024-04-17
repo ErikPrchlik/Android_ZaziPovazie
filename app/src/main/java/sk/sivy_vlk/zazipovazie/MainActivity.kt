@@ -21,6 +21,7 @@ import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
 import sk.sivy_vlk.zazipovazie.view_model.State
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import sk.sivy_vlk.zazipovazie.activity.MapObjectDetailActivity
+import sk.sivy_vlk.zazipovazie.activity.TripListActivity
 import sk.sivy_vlk.zazipovazie.model.MapObject
 import java.io.FileInputStream
 
@@ -46,6 +47,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment!!.getMapAsync(this)
+
+        binding.fab.setOnClickListener {
+            startActivity(Intent(this, TripListActivity::class.java))
+        }
 
     }
 

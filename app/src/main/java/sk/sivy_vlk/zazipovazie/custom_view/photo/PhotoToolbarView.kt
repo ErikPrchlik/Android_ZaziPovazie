@@ -2,9 +2,7 @@ package sk.sivy_vlk.zazipovazie.custom_view.photo
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
-import android.widget.ProgressBar
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -12,6 +10,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import sk.sivy_vlk.zazipovazie.R
+import sk.sivy_vlk.zazipovazie.adapter.PhotoPagerAdapter
 
 class PhotoToolbarView @JvmOverloads constructor(
     context: Context,

@@ -1,7 +1,5 @@
-package sk.sivy_vlk.zazipovazie.custom_view.photo
+package sk.sivy_vlk.zazipovazie.adapter
 
-import android.content.Context
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +8,6 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
-import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.squareup.picasso.Picasso
 import sk.sivy_vlk.zazipovazie.R

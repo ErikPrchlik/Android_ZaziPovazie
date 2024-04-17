@@ -18,6 +18,14 @@
         android:theme="@style/Theme.ZaziPovazie"
         tools:targetApi="31">
         <activity
+            android:name=".activity.TripDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ZaziPovazie" />
+        <activity
+            android:name=".activity.TripListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ZaziPovazie" />
+        <activity
             android:name=".activity.MapObjectDetailActivity"
             android:exported="false"
             android:theme="@style/Theme.ZaziPovazie" />
