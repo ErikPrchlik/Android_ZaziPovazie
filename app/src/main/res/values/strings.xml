@@ -47,5 +47,8 @@
     <string name="communication_error">Something went wrong during COMMUNICATION</string>
     <string name="communication_exception">Something went wrong during COMMUNICATION Exception</string>
     <string name="no_data">Something went wrong - NO DATA</string>
+    <string name="trip_recommendations">Trip recommendations</string>
+    <string name="whole_day_trips">Whole day trips</string>
+    <string name="short_term_trips">Short term trips</string>
 
 </resources>
