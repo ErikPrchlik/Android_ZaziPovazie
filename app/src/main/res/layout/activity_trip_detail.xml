@@ -19,7 +19,9 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_trip_detail" />
+    <include
+        android:id="@+id/tripDetailContent"
+        layout="@layout/content_trip_detail" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

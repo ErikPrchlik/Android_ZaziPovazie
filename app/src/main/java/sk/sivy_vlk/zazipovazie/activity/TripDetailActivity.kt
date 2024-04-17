@@ -9,6 +9,8 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import sk.sivy_vlk.zazipovazie.R
 import sk.sivy_vlk.zazipovazie.databinding.ActivityTripDetailBinding
+import sk.sivy_vlk.zazipovazie.model.Trip
+import sk.sivy_vlk.zazipovazie.utils.serializable
 
 class TripDetailActivity : AppCompatActivity() {
 
@@ -21,6 +23,10 @@ class TripDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
+
+        val trip = intent.serializable("TRIP") as? Trip
+
+        binding.tripDetailContent.tripName.text = trip?.name
 
     }
 
