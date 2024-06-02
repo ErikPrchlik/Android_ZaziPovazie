@@ -52,7 +52,7 @@ internal class ImageFragment : Fragment() {
             Picasso.get()
                 .load(imageUrl)
                 .placeholder(R.drawable.placeholder)
-                .error(R.drawable.placeholder_error)
+                .error(R.drawable.ic_sync_problem_vector)
                 .into(imageView, object : com.squareup.picasso.Callback {
                     override fun onSuccess() {
 

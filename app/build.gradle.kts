@@ -79,4 +79,6 @@ dependencies {
 
     // Photos
     implementation(libs.picasso)
+
+    implementation(libs.androidx.cardview)
 }

@@ -1,5 +1,6 @@
 package sk.sivy_vlk.zazipovazie.activity
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,8 @@ class TripListActivity : AppCompatActivity() {
 
         binding = ActivityTripListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.toolbar.setTitleTextColor(Color.BLACK)
 
         setSupportActionBar(binding.toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(true)
@@ -50,10 +53,16 @@ class TripListActivity : AppCompatActivity() {
             )
 
         // Initialize adapters
-        tripCategoryAdapter = TripCategoryAdapter(tripCategories)
+        tripCategoryAdapter = TripCategoryAdapter(this, tripCategories)
 
         // Set adapters to RecyclerViews
+        val verticalSpacingHeight = this.resources.getDimensionPixelSize(R.dimen.vertical_spacing) // Adjust as needed
+        val itemDecoration = TripCategoryAdapter.TripCategoryViewHolder.VerticalSpaceItemDecoration(
+            verticalSpacingHeight
+        )
+
         val categoryRecyclerView: RecyclerView = binding.tripListContent.tripCategoriesRecyclerView
+        categoryRecyclerView.addItemDecoration(itemDecoration)
         categoryRecyclerView.layoutManager = LinearLayoutManager(this)
         categoryRecyclerView.adapter = tripCategoryAdapter
 
