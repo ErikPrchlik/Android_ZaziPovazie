@@ -4,9 +4,12 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -14,21 +17,27 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.maps.android.collections.MarkerManager
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import sk.sivy_vlk.zazipovazie.activity.TripListActivity
 import sk.sivy_vlk.zazipovazie.databinding.ActivityMainBinding
+import sk.sivy_vlk.zazipovazie.fragment.InfoWindowFragment
+import sk.sivy_vlk.zazipovazie.model.MapObject
 import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
 import sk.sivy_vlk.zazipovazie.view_model.State
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import sk.sivy_vlk.zazipovazie.activity.MapObjectDetailActivity
-import sk.sivy_vlk.zazipovazie.activity.TripListActivity
-import sk.sivy_vlk.zazipovazie.model.MapObject
 import java.io.FileInputStream
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private var mapObjects: List<MapObject> = listOf()
     private lateinit var binding: ActivityMainBinding
+
+    private var mapObjects: List<MapObject> = listOf()
+
+    private var markerManager: MarkerManager? = null
+    private var currentCollection: String = "ALL"
 
     private lateinit var googleMap: GoogleMap
     private var mapFragment: SupportMapFragment? = null
@@ -72,6 +81,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(gMap: GoogleMap) {
         googleMap = gMap
+        markerManager = MarkerManager(googleMap)
 
         val latLng = LatLng(48.9534531, 18.1661339) // specify your latitude and longitude here
         val zoomLevel = 12f // specify your zoom level here
@@ -80,13 +90,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         observeState()
 
-        googleMap.setOnMarkerClickListener { marker ->
-            val id = marker.tag as Int
-            val mapObject = mapObjects.firstOrNull { it.id == id }
-            val intent = Intent(this, MapObjectDetailActivity::class.java)
-            intent.putExtra("MAP_OBJECT", mapObject)
-            startActivity(intent)
-            true
+        googleMap.setOnMapClickListener {
+            removeInfoWindowFragment(false)
         }
 
     }
@@ -96,12 +101,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             viewModel.mapObjectsState.collect { state ->
                 when (state) {
                     is State.Success -> {
+                        markerManager!!.newCollection("ALL")
+
                         mapObjects = state.data
                         mapObjects.forEach {
                             val latLng = LatLng(it.latLng.latitude, it.latLng.longitude)
                             val markerOptions = MarkerOptions()
                                 .title(it.name)
+                                .snippet(it.category)
                                 .position(latLng)
+                                .visible(false)
                             if (it.icon != null) {
                                 val fileInputStream = FileInputStream(it.icon)
                                 val bitmap = BitmapFactory.decodeStream(fileInputStream)
@@ -110,10 +119,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                 val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
                                 markerOptions.icon(bitmapDescriptor)
                             }
-                            googleMap.addMarker(
+                            markerManager!!.getCollection("ALL")?.addMarker(
                                 markerOptions
                             )?.tag = it.id
+                            if (markerManager!!.getCollection(it.category) == null) {
+                                markerManager!!.newCollection(it.category)
+                            }
+                            markerManager!!.getCollection(it.category)?.addMarker(
+                                markerOptions
+                            )?.tag = it.id
+                            markerManager!!.getCollection(it.category).hideAll()
                         }
+                        setOnMarkerClickListener()
                     }
                     is State.Error -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
@@ -122,5 +139,38 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+    }
+
+    private fun setOnMarkerClickListener() {
+        markerManager!!.getCollection(currentCollection).showAll()
+        markerManager!!.getCollection(currentCollection).setOnMarkerClickListener { marker ->
+            showInfoWindowFragment(marker)
+            true
+        }
+    }
+
+    private fun showInfoWindowFragment(marker: Marker) {
+        Log.d("LogMainActivity","showInfoWindowFragment")
+
+        val fragmentTransaction = removeInfoWindowFragment(true)
+
+        // Add the new fragment
+        val id = marker.tag as Int
+        val mapObject = mapObjects.firstOrNull { it.id == id }
+        val infoWindowFragment = InfoWindowFragment.newInstance(mapObject)
+        fragmentTransaction.add(R.id.fragment_container, infoWindowFragment, "INFO_WINDOW")
+        fragmentTransaction.commit()
+    }
+
+    private fun removeInfoWindowFragment(show: Boolean): FragmentTransaction {
+        // Remove existing fragment if any
+        val fragmentManager: FragmentManager = supportFragmentManager
+        val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+        val existingFragment: Fragment? = fragmentManager.findFragmentByTag("INFO_WINDOW")
+        if (existingFragment != null) {
+            fragmentTransaction.remove(existingFragment)
+            if (!show) fragmentTransaction.commit()
+        }
+        return fragmentTransaction
     }
 }
