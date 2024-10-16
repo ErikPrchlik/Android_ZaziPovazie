@@ -14,8 +14,28 @@
         android:layout_height="match_parent"
         tools:context=".MainActivity" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
+        android:layout_alignEnd="@id/fragment_info_window">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight=".30"
+            android:layout_height="match_parent"/>
+
+        <FrameLayout
+            android:id="@+id/fragment_category"
+            android:layout_width="0dp"
+            android:layout_weight=".70"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
     <FrameLayout
-        android:id="@+id/fragment_container"
+        android:id="@+id/fragment_info_window"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

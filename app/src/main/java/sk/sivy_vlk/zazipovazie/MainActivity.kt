@@ -4,8 +4,6 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -24,6 +22,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import sk.sivy_vlk.zazipovazie.activity.TripListActivity
 import sk.sivy_vlk.zazipovazie.databinding.ActivityMainBinding
+import sk.sivy_vlk.zazipovazie.fragment.CategoryScrollingFragment
 import sk.sivy_vlk.zazipovazie.fragment.InfoWindowFragment
 import sk.sivy_vlk.zazipovazie.model.MapObject
 import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
@@ -44,6 +43,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val viewModel: MapActivityViewModel by viewModel()
 
+    private val INFO_WINDOW = "INFO_WINDOW"
+    private val CATEGORY_MENU = "CATEGORY_MENU"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -61,22 +63,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivity(Intent(this, TripListActivity::class.java))
         }
 
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
+        binding.menu.setOnClickListener {
+            val fragmentManager: FragmentManager = supportFragmentManager
+            val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+            val fragment = CategoryScrollingFragment()
+            val existingFragment: Fragment? = fragmentManager.findFragmentByTag(CATEGORY_MENU)
+            if (existingFragment == null) {
+                fragmentTransaction.add(R.id.fragment_category, fragment, CATEGORY_MENU)
+            } else {
+                fragmentTransaction.remove(existingFragment)
+            }
+            fragmentTransaction.commit()
         }
+
     }
 
     override fun onMapReady(gMap: GoogleMap) {
@@ -91,7 +90,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         observeState()
 
         googleMap.setOnMapClickListener {
-            removeInfoWindowFragment(false)
+            removeInfoWindowFragment(false, INFO_WINDOW)
+            removeInfoWindowFragment(false, CATEGORY_MENU)
         }
 
     }
@@ -152,21 +152,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun showInfoWindowFragment(marker: Marker) {
         Log.d("LogMainActivity","showInfoWindowFragment")
 
-        val fragmentTransaction = removeInfoWindowFragment(true)
+        val fragmentTransaction = removeInfoWindowFragment(true, INFO_WINDOW)
 
         // Add the new fragment
         val id = marker.tag as Int
         val mapObject = mapObjects.firstOrNull { it.id == id }
         val infoWindowFragment = InfoWindowFragment.newInstance(mapObject)
-        fragmentTransaction.add(R.id.fragment_container, infoWindowFragment, "INFO_WINDOW")
+        fragmentTransaction.add(R.id.fragment_info_window, infoWindowFragment, INFO_WINDOW)
         fragmentTransaction.commit()
     }
 
-    private fun removeInfoWindowFragment(show: Boolean): FragmentTransaction {
+    private fun removeInfoWindowFragment(show: Boolean, fragmentTag: String): FragmentTransaction {
         // Remove existing fragment if any
         val fragmentManager: FragmentManager = supportFragmentManager
         val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-        val existingFragment: Fragment? = fragmentManager.findFragmentByTag("INFO_WINDOW")
+        val existingFragment: Fragment? = fragmentManager.findFragmentByTag(fragmentTag)
         if (existingFragment != null) {
             fragmentTransaction.remove(existingFragment)
             if (!show) fragmentTransaction.commit()
