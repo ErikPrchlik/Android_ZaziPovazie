@@ -22,7 +22,6 @@ class MapObjectDetailActivity : AppCompatActivity() {
 
         val mapObject = intent.serializable("MAP_OBJECT") as? MapObject
         if (mapObject != null) {
-            Log.d("LogMapObjectDetailActivity", "MapObject ${mapObject.name}")
             binding.placeObjectContent.mapObjectName.text = mapObject.name
             val descriptionSplit = mapObject.description.split("\n")
             val description = StringBuilder()

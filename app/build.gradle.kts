@@ -70,6 +70,7 @@ dependencies {
 
     // Maps SDK for Android
     implementation(libs.play.services.maps)
+    implementation(libs.android.maps.utils)
 
     // HTTP Communication
     implementation(libs.logging.interceptor)

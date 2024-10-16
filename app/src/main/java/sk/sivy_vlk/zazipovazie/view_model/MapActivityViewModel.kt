@@ -4,7 +4,6 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +30,7 @@ class MapActivityViewModel(private val app: Application,
 ): AndroidViewModel(app) {
 
     private var iconImages: List<File> = emptyList()
+    private val mapCategory = mutableMapOf<String, File?>()
     private val _dataState: MutableStateFlow<State<InputStream>> = MutableStateFlow(State.Loading)
     private val _mapObjectsState: MutableStateFlow<State<List<MapObject>>> = MutableStateFlow(State.Loading)
     val mapObjectsState: StateFlow<State<List<MapObject>>> = _mapObjectsState
@@ -39,6 +39,7 @@ class MapActivityViewModel(private val app: Application,
         viewModelScope.launch {
             try {
                 val jobDownloadKMZ = async { downloadKMZFile() }
+//                _dataState.emit(State.Success(app.applicationContext.assets.open("map_file.kmz")))
                 val jobLoadKMZ = async { loadKMZ() }
                 jobDownloadKMZ.await()
                 jobLoadKMZ.await()
@@ -126,24 +127,32 @@ class MapActivityViewModel(private val app: Application,
         var eventType = parser.eventType
         val mapObjects = mutableListOf<MapObject>()
         var id = 0
+        var inFolder = false
         var inPlaceMark = false
         var inLink = false
+        var folderName = ""
         var placeMarkName = ""
-        var category = ""
         var description = ""
         var image = ""
         var latLng: ParcelableLatLng? = null
         var inStyle = false
         var inIcon = false
         var styleId = ""
+        var styleCategory = ""
         var iconUrl = ""
-        var mapStyle = mutableMapOf<String, String>()
+        val mapStyle = mutableMapOf<String, String>()
 
         while (eventType != XmlPullParser.END_DOCUMENT) {
             when (eventType) {
                 XmlPullParser.START_TAG -> {
                     val tagName = parser.name
-                    if (tagName.equals("Placemark", ignoreCase = true)) {
+                    if (tagName.equals("Folder", ignoreCase = true)) {
+                        inFolder = true
+                    } else if (tagName.equals("name", ignoreCase = true) && inFolder) {
+                        folderName = parser.nextText().trim()
+                        mapCategory[folderName] = null
+                        inFolder = false
+                    } else if (tagName.equals("Placemark", ignoreCase = true)) {
                         inPlaceMark = true
                         id++
                     } else if (tagName.equals("name", ignoreCase = true) && inPlaceMark) {
@@ -157,13 +166,11 @@ class MapActivityViewModel(private val app: Application,
                         description = description.replace(Regex("<br>"), "\n")
                     } else if (tagName.equals("Data", ignoreCase = true) && inPlaceMark) {
                         inLink = true
-                        Log.d("LogMapActivityViewModel", "Link")
                     } else if (tagName.equals("value", ignoreCase = true) && inPlaceMark && inLink) {
                         image = parser.nextText().trim()
-                        Log.d("LogMapActivityViewModel", "Image: $image")
                     } else if (tagName.equals("styleUrl", ignoreCase = true) && inPlaceMark) {
-                        category = parser.nextText().trim()
-                        category = category.replace(Regex("#"), "")
+                        styleCategory = parser.nextText().trim()
+                        styleCategory = styleCategory.replace(Regex("#"), "")
                     } else if (tagName.equals("Style", ignoreCase = true)) {
                         inStyle = true
                         styleId = parser.getAttributeValue(null, "id")
@@ -175,12 +182,14 @@ class MapActivityViewModel(private val app: Application,
                 }
                 XmlPullParser.END_TAG -> {
                     val tagName = parser.name
-                    if (tagName.equals("Placemark", ignoreCase = true) && inPlaceMark) {
+                    if (tagName.equals("Folder", ignoreCase = true) && inFolder) {
+                        inFolder = false
+                    } else if (tagName.equals("Placemark", ignoreCase = true) && inPlaceMark) {
                         // Draw placemark on map
                         if (latLng != null) {
                             mapObjects.add(
                                 MapObject(
-                                    id, placeMarkName, category, description, image, latLng
+                                    id, name = placeMarkName, category = folderName, description, image, latLng, styleCategory
                                 )
                             )
                         }
@@ -202,11 +211,14 @@ class MapActivityViewModel(private val app: Application,
     private fun pairObjectsStyle(mapObjects: MutableList<MapObject>, mapStyle: MutableMap<String, String>) {
         Log.d("LogMapActivityViewModel", "mapStyle: $mapStyle")
         mapObjects.forEach { mapObject ->
-            val key = mapStyle.keys.find { it.contains(mapObject.category) }
+            val key = mapStyle.keys.find { it.contains(mapObject.categoryIconPath) }
             mapObject.iconUrl = mapStyle[key]
             mapObject.icon = iconImages.firstOrNull {
                 !mapObject.iconUrl.isNullOrEmpty() && mapObject.iconUrl!!.contains(it.name, ignoreCase = true)
             }
+        }
+        mapCategory.forEach { (category, _) ->
+            mapCategory[category] = mapObjects.firstOrNull { it.category == category }?.icon
         }
     }
 

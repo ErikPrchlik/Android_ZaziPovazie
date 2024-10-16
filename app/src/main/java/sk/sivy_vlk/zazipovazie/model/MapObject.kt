@@ -10,6 +10,7 @@ data class MapObject(
     val description: String,
     val image: String,
     val latLng: ParcelableLatLng,
+    val categoryIconPath: String,
     var iconUrl: String? = null,
     var icon: File? = null
 ): Serializable
