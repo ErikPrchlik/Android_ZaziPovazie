@@ -25,18 +25,19 @@ import sk.sivy_vlk.zazipovazie.databinding.ActivityMainBinding
 import sk.sivy_vlk.zazipovazie.fragment.CategoryScrollingFragment
 import sk.sivy_vlk.zazipovazie.fragment.InfoWindowFragment
 import sk.sivy_vlk.zazipovazie.model.MapObject
+import sk.sivy_vlk.zazipovazie.model.MapObjectsByCategory
 import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
 import sk.sivy_vlk.zazipovazie.view_model.State
 import java.io.FileInputStream
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, CategoryScrollingFragment.OnCategoryCheckedListener {
 
     private lateinit var binding: ActivityMainBinding
 
     private var mapObjects: List<MapObject> = listOf()
+    private var mapCategories = arrayListOf<MapObjectsByCategory>()
 
     private var markerManager: MarkerManager? = null
-    private var currentCollection: String = "ALL"
 
     private lateinit var googleMap: GoogleMap
     private var mapFragment: SupportMapFragment? = null
@@ -62,20 +63,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.fab.setOnClickListener {
             startActivity(Intent(this, TripListActivity::class.java))
         }
-
-        binding.menu.setOnClickListener {
-            val fragmentManager: FragmentManager = supportFragmentManager
-            val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
-            val fragment = CategoryScrollingFragment()
-            val existingFragment: Fragment? = fragmentManager.findFragmentByTag(CATEGORY_MENU)
-            if (existingFragment == null) {
-                fragmentTransaction.add(R.id.fragment_category, fragment, CATEGORY_MENU)
-            } else {
-                fragmentTransaction.remove(existingFragment)
-            }
-            fragmentTransaction.commit()
-        }
-
     }
 
     override fun onMapReady(gMap: GoogleMap) {
@@ -101,9 +88,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             viewModel.mapObjectsState.collect { state ->
                 when (state) {
                     is State.Success -> {
-                        markerManager!!.newCollection("ALL")
-
                         mapObjects = state.data
+
                         mapObjects.forEach {
                             val latLng = LatLng(it.latLng.latitude, it.latLng.longitude)
                             val markerOptions = MarkerOptions()
@@ -119,18 +105,31 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                                 val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
                                 markerOptions.icon(bitmapDescriptor)
                             }
-                            markerManager!!.getCollection("ALL")?.addMarker(
-                                markerOptions
-                            )?.tag = it.id
                             if (markerManager!!.getCollection(it.category) == null) {
                                 markerManager!!.newCollection(it.category)
                             }
                             markerManager!!.getCollection(it.category)?.addMarker(
                                 markerOptions
                             )?.tag = it.id
-                            markerManager!!.getCollection(it.category).hideAll()
                         }
-                        setOnMarkerClickListener()
+
+
+                        viewModel.mapCategories.collect { categories ->
+                            mapCategories = if (categories is State.Success) categories.data else arrayListOf()
+                            binding.menu.setOnClickListener {
+                                val fragmentManager: FragmentManager = supportFragmentManager
+                                val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+                                val fragment = CategoryScrollingFragment.newInstance(mapCategories)
+                                val existingFragment: Fragment? = fragmentManager.findFragmentByTag(CATEGORY_MENU)
+                                if (existingFragment == null) {
+                                    fragmentTransaction.add(R.id.fragment_category, fragment, CATEGORY_MENU)
+                                } else {
+                                    fragmentTransaction.remove(existingFragment)
+                                }
+                                fragmentTransaction.commit()
+                            }
+                            setOnMarkerClickListener()
+                        }
                     }
                     is State.Error -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
@@ -142,15 +141,16 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun setOnMarkerClickListener() {
-        markerManager!!.getCollection(currentCollection).showAll()
-        markerManager!!.getCollection(currentCollection).setOnMarkerClickListener { marker ->
-            showInfoWindowFragment(marker)
-            true
+        mapCategories.forEach {
+            markerManager!!.getCollection(it.name)?.showAll()
+            markerManager!!.getCollection(it.name).setOnMarkerClickListener { marker ->
+                showInfoWindowFragment(marker)
+                true
+            }
         }
     }
 
     private fun showInfoWindowFragment(marker: Marker) {
-        Log.d("LogMainActivity","showInfoWindowFragment")
 
         val fragmentTransaction = removeInfoWindowFragment(true, INFO_WINDOW)
 
@@ -172,5 +172,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             if (!show) fragmentTransaction.commit()
         }
         return fragmentTransaction
+    }
+
+    // Implement the interface method
+    override fun onCategoryChecked(category: MapObjectsByCategory, isChecked: Boolean) {
+        if (!isChecked) {
+            // If the category is unchecked, filter the markers associated with this category
+            removeMarkersForCategory(category)
+        } else {
+            // If the category is checked, add the markers back
+            addMarkersForCategory(category)
+        }
+    }
+
+    private fun removeMarkersForCategory(category: MapObjectsByCategory) {
+        markerManager!!.getCollection(category.name).hideAll()
+        val index = mapCategories.indexOfFirst { it.name == category.name }
+        mapCategories[index].isShowed = false
+    }
+
+    private fun addMarkersForCategory(category: MapObjectsByCategory) {
+        markerManager!!.getCollection(category.name).showAll()
+        val index = mapCategories.indexOfFirst { it.name == category.name }
+        mapCategories[index].isShowed = true
     }
 }

@@ -13,6 +13,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import sk.sivy_vlk.zazipovazie.R
 import sk.sivy_vlk.zazipovazie.communication.CommunicationResult
 import sk.sivy_vlk.zazipovazie.model.MapObject
+import sk.sivy_vlk.zazipovazie.model.MapObjectsByCategory
 import sk.sivy_vlk.zazipovazie.model.ParcelableLatLng
 import sk.sivy_vlk.zazipovazie.repository.IKMZInputStreamRepository
 import java.io.BufferedInputStream
@@ -29,11 +30,12 @@ class MapActivityViewModel(private val app: Application,
                            private val kmzInputStreamRepository: IKMZInputStreamRepository
 ): AndroidViewModel(app) {
 
-    private var iconImages: List<File> = emptyList()
-    private val mapCategory = mutableMapOf<String, File?>()
+    private var _iconImages: List<File> = emptyList()
+    private val _mapCategories = arrayListOf<MapObjectsByCategory>()
     private val _dataState: MutableStateFlow<State<InputStream>> = MutableStateFlow(State.Loading)
     private val _mapObjectsState: MutableStateFlow<State<List<MapObject>>> = MutableStateFlow(State.Loading)
     val mapObjectsState: StateFlow<State<List<MapObject>>> = _mapObjectsState
+    val mapCategories: StateFlow<State<ArrayList<MapObjectsByCategory>>> = MutableStateFlow(State.Success(_mapCategories))
 
     fun start() {
         viewModelScope.launch {
@@ -69,7 +71,7 @@ class MapActivityViewModel(private val app: Application,
                         val inputStreamCopy = ByteArrayInputStream(inputStream.readBytes())
                         extractKMZ(inputStreamCopy)
                         inputStreamCopy.reset()
-                        iconImages = findIconImages(File(app.applicationContext.cacheDir, "temp"))
+                        _iconImages = findIconImages(File(app.applicationContext.cacheDir, "temp"))
                         val data = readKMZFile(inputStreamCopy)
                         val kmlContent = data?.let { extractKMLFromKMZ(it) }
                         Log.d("LogMapActivityViewModel", "KML content: $kmlContent")
@@ -150,7 +152,12 @@ class MapActivityViewModel(private val app: Application,
                         inFolder = true
                     } else if (tagName.equals("name", ignoreCase = true) && inFolder) {
                         folderName = parser.nextText().trim()
-                        mapCategory[folderName] = null
+                        _mapCategories.add(MapObjectsByCategory(
+                            name = folderName,
+                            isShowed = true,
+                            isExpanded = false,
+                            mapObjects = listOf()
+                        ))
                         inFolder = false
                     } else if (tagName.equals("Placemark", ignoreCase = true)) {
                         inPlaceMark = true
@@ -213,12 +220,13 @@ class MapActivityViewModel(private val app: Application,
         mapObjects.forEach { mapObject ->
             val key = mapStyle.keys.find { it.contains(mapObject.categoryIconPath) }
             mapObject.iconUrl = mapStyle[key]
-            mapObject.icon = iconImages.firstOrNull {
+            mapObject.icon = _iconImages.firstOrNull {
                 !mapObject.iconUrl.isNullOrEmpty() && mapObject.iconUrl!!.contains(it.name, ignoreCase = true)
             }
         }
-        mapCategory.forEach { (category, _) ->
-            mapCategory[category] = mapObjects.firstOrNull { it.category == category }?.icon
+        _mapCategories.forEach { (category, _) ->
+            val mapCategoryIndex = _mapCategories.indexOfFirst { category == it.name }
+            _mapCategories[mapCategoryIndex].mapObjects = mapObjects.filter { it.category == category }
         }
     }
 
