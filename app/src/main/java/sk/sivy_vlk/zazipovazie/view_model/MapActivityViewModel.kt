@@ -127,14 +127,19 @@ class MapActivityViewModel(private val app: Application,
         parser.setInput(StringReader(kmlContent))
 
         var eventType = parser.eventType
+        var tagClass = ""
         val mapObjects = mutableListOf<MapObject>()
         var id = 0
         var inFolder = false
         var inPlaceMark = false
-        var inLink = false
+        var inData = false
         var folderName = ""
         var placeMarkName = ""
         var description = ""
+        var phone = ""
+        var email = ""
+        var web = ""
+        var address = ""
         var image = ""
         var latLng: ParcelableLatLng? = null
         var inStyle = false
@@ -167,14 +172,18 @@ class MapActivityViewModel(private val app: Application,
                     } else if (tagName.equals("coordinates", ignoreCase = true) && inPlaceMark) {
                         val coordinates = parser.nextText().trim().split(",")
                         latLng = ParcelableLatLng(coordinates[1].toDouble(), coordinates[0].toDouble())
-                    } else if (tagName.equals("description", ignoreCase = true) && inPlaceMark) {
-                        description = parser.nextText().trim()
-                        description = description.replace(Regex("<!\\[CDATA\\[(.*?)]]>"), "$1")
-                        description = description.replace(Regex("<br>"), "\n")
                     } else if (tagName.equals("Data", ignoreCase = true) && inPlaceMark) {
-                        inLink = true
-                    } else if (tagName.equals("value", ignoreCase = true) && inPlaceMark && inLink) {
-                        image = parser.nextText().trim()
+                        tagClass = parser.getAttributeValue(null, "name")
+                        inData = true
+                    } else if (tagName.equals("value", ignoreCase = true) && inPlaceMark && inData) {
+                        when (tagClass) {
+                            "Popis" -> { description = parser.nextText().trim() }
+                            "Číslo" -> { phone = parser.nextText().trim() }
+                            "Email" -> { email = parser.nextText().trim() }
+                            "Web" -> { web = parser.nextText().trim() }
+                            "Adresa" -> { address = parser.nextText().trim() }
+                            "gx_media_links" -> { image = parser.nextText().trim() }
+                        }
                     } else if (tagName.equals("styleUrl", ignoreCase = true) && inPlaceMark) {
                         styleCategory = parser.nextText().trim()
                         styleCategory = styleCategory.replace(Regex("#"), "")
@@ -196,13 +205,15 @@ class MapActivityViewModel(private val app: Application,
                         if (latLng != null) {
                             mapObjects.add(
                                 MapObject(
-                                    id, name = placeMarkName, category = folderName, description, image, latLng, styleCategory
+                                    id, name = placeMarkName, category = folderName,
+                                    description, phone, web, email, address,
+                                    image, latLng, styleCategory
                                 )
                             )
                         }
                         inPlaceMark = false
-                    } else if (tagName.equals("Data", ignoreCase = true) && inPlaceMark && inLink) {
-                        inLink = false
+                    } else if (tagName.equals("Data", ignoreCase = true) && inData) {
+                        inData = false
                     } else if (tagName.equals("Style", ignoreCase = true) && inStyle) {
                         mapStyle[styleId] = iconUrl
                         inStyle = false
