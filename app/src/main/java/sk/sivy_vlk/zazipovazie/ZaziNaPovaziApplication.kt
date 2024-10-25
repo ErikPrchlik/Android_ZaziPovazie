@@ -9,14 +9,14 @@ import org.koin.core.logger.Level
 import sk.sivy_vlk.zazipovazie.di.KMZInputStreamRepositoryModule
 import sk.sivy_vlk.zazipovazie.di.appModule
 
-class ZaziPovazieApplication: Application() {
+class ZaziNaPovaziApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
         // Initialize Koin
         startKoin {
             androidLogger(Level.DEBUG)
-            androidContext(this@ZaziPovazieApplication)
+            androidContext(this@ZaziNaPovaziApplication)
             modules(appModule, KMZInputStreamRepositoryModule)
         }
         appContext = applicationContext
