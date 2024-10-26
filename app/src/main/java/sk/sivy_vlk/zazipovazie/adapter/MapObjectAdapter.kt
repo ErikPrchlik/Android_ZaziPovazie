@@ -1,14 +1,12 @@
 package sk.sivy_vlk.zazipovazie.adapter
 
 import android.graphics.BitmapFactory
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import sk.sivy_vlk.zazipovazie.R
 import sk.sivy_vlk.zazipovazie.model.MapObject
 import java.io.FileInputStream
@@ -39,7 +37,6 @@ class MapObjectAdapter(
         holder.objectName.text = mapObject.name
 
         holder.itemView.setOnClickListener {
-            Log.d("MapObjectAd", "setOnClickListener")
             mapObjectClickedListener(mapObject)
         }
     }

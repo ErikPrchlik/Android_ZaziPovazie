@@ -1,6 +1,5 @@
 package sk.sivy_vlk.zazipovazie.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -59,7 +58,6 @@ class MapCategoryAdapter(
         holder.expandButton.rotation = if (category.isExpanded) 180f else 0f
 
         holder.itemView.setOnClickListener {
-            Log.d("MapCategoryAd", "setOnClickListener")
             toggleCategoryExpansion(position)
         }
     }

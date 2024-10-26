@@ -38,6 +38,8 @@ class MapActivityViewModel(private val app: Application,
 
     fun start() {
         viewModelScope.launch {
+            _mapObjectsState.emit(State.Loading)
+            _dataState.emit(State.Loading)
             try {
                 val jobDownloadKMZ = async { downloadKMZFile() }
 //                _dataState.emit(State.Success(app.applicationContext.assets.open("map_file.kmz")))
@@ -51,6 +53,7 @@ class MapActivityViewModel(private val app: Application,
     }
 
     private fun downloadKMZFile() = viewModelScope.launch {
+        _dataState.emit(State.Loading)
         val result = kmzInputStreamRepository.getKMZInputStream()
         _dataState.emit(
             when (result) {

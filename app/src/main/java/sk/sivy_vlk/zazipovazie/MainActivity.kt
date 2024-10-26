@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -65,6 +66,11 @@ class MainActivity
 
         binding.fab.setOnClickListener {
             startActivity(Intent(this, TripListActivity::class.java))
+        }
+
+        binding.reload.setOnClickListener {
+            binding.reload.visibility = View.GONE
+            viewModel.start()
         }
     }
 
@@ -136,6 +142,7 @@ class MainActivity
                     }
                     is State.Error -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
+                        binding.reload.visibility = View.VISIBLE
                     }
                     State.Loading -> {}
                 }
@@ -179,7 +186,6 @@ class MainActivity
 
     // Implement the interface method
     override fun onCategoryChecked(category: MapObjectsByCategory, isChecked: Boolean) {
-        Log.d("MainActivity", "onCategoryChecked")
         if (!isChecked) {
             // If the category is unchecked, filter the markers associated with this category
             removeMarkersForCategory(category)
@@ -202,7 +208,6 @@ class MainActivity
     }
 
     override fun categoryMapObjectClicked(mapObject: MapObject) {
-        Log.d("MainActivity", "categoryMapObjectClicked")
         val latLng = LatLng(mapObject.latLng.latitude, mapObject.latLng.longitude)
         val cameraUpdate = CameraUpdateFactory.newLatLng(latLng)
         googleMap.animateCamera(cameraUpdate)
