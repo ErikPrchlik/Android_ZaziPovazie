@@ -17,6 +17,7 @@
         android:id="@+id/tv_object_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingStart="8dp"
         android:text="Object Name"/>
 
 </LinearLayout>

@@ -1,7 +1,6 @@
 package sk.sivy_vlk.zazipovazie.view_model
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.async
@@ -74,7 +73,6 @@ class MapActivityViewModel(private val app: Application,
                         _iconImages = findIconImages(File(app.applicationContext.cacheDir, "temp"))
                         val data = readKMZFile(inputStreamCopy)
                         val kmlContent = data?.let { extractKMLFromKMZ(it) }
-                        Log.d("LogMapActivityViewModel", "KML content: $kmlContent")
                         val mapObjects = kmlContent?.let { parseKMLContent(it) }
                         if (!mapObjects.isNullOrEmpty()) {
                             _mapObjectsState.emit(State.Success(mapObjects))
@@ -227,7 +225,6 @@ class MapActivityViewModel(private val app: Application,
     }
 
     private fun pairObjectsStyle(mapObjects: MutableList<MapObject>, mapStyle: MutableMap<String, String>) {
-        Log.d("LogMapActivityViewModel", "mapStyle: $mapStyle")
         mapObjects.forEach { mapObject ->
             val key = mapStyle.keys.find { it.contains(mapObject.categoryIconPath) }
             mapObject.iconUrl = mapStyle[key]
@@ -237,8 +234,10 @@ class MapActivityViewModel(private val app: Application,
         }
         _mapCategories.forEach { (category, _) ->
             val mapCategoryIndex = _mapCategories.indexOfFirst { category == it.name }
-            _mapCategories[mapCategoryIndex].mapObjects = mapObjects.filter { it.category == category }
+            _mapCategories[mapCategoryIndex].mapObjects =
+                mapObjects.filter { it.category == category }.sortedBy { it.name }
         }
+        _mapCategories.sortBy { it.name }
     }
 
     private fun extractKMZ(kmzFile: InputStream) {
