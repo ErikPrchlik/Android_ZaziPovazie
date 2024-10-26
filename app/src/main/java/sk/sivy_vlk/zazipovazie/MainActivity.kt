@@ -30,7 +30,10 @@ import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
 import sk.sivy_vlk.zazipovazie.view_model.State
 import java.io.FileInputStream
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, CategoryScrollingFragment.OnCategoryCheckedListener {
+class MainActivity
+    : AppCompatActivity(), OnMapReadyCallback,
+    CategoryScrollingFragment.OnCategoryCheckedListener,
+    CategoryScrollingFragment.OnCategoryMapObjectClickedListener {
 
     private lateinit var binding: ActivityMainBinding
 
@@ -176,6 +179,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, CategoryScrollingF
 
     // Implement the interface method
     override fun onCategoryChecked(category: MapObjectsByCategory, isChecked: Boolean) {
+        Log.d("MainActivity", "onCategoryChecked")
         if (!isChecked) {
             // If the category is unchecked, filter the markers associated with this category
             removeMarkersForCategory(category)
@@ -195,5 +199,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, CategoryScrollingF
         markerManager!!.getCollection(category.name).showAll()
         val index = mapCategories.indexOfFirst { it.name == category.name }
         mapCategories[index].isShowed = true
+    }
+
+    override fun categoryMapObjectClicked(mapObject: MapObject) {
+        Log.d("MainActivity", "categoryMapObjectClicked")
+        val latLng = LatLng(mapObject.latLng.latitude, mapObject.latLng.longitude)
+        val cameraUpdate = CameraUpdateFactory.newLatLng(latLng)
+        googleMap.animateCamera(cameraUpdate)
+
+        val marker = markerManager!!.getCollection(mapObject.category).markers.find { it.tag == mapObject.id }
+        marker?.let { showInfoWindowFragment(it) }
     }
 }

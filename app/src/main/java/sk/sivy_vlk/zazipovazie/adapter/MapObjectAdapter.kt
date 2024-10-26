@@ -1,6 +1,7 @@
 package sk.sivy_vlk.zazipovazie.adapter
 
 import android.graphics.BitmapFactory
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +13,10 @@ import sk.sivy_vlk.zazipovazie.R
 import sk.sivy_vlk.zazipovazie.model.MapObject
 import java.io.FileInputStream
 
-class MapObjectAdapter(private val objects: List<MapObject>) :
-    RecyclerView.Adapter<MapObjectAdapter.ObjectViewHolder>() {
+class MapObjectAdapter(
+    private val objects: List<MapObject>,
+    private val mapObjectClickedListener: (MapObject) -> Unit
+) : RecyclerView.Adapter<MapObjectAdapter.ObjectViewHolder>() {
 
     inner class ObjectViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val objectName: TextView = itemView.findViewById(R.id.tv_object_name)
@@ -34,6 +37,11 @@ class MapObjectAdapter(private val objects: List<MapObject>) :
             holder.objectIcon.setImageBitmap(bitmap)
         }
         holder.objectName.text = mapObject.name
+
+        holder.itemView.setOnClickListener {
+            Log.d("MapObjectAd", "setOnClickListener")
+            mapObjectClickedListener(mapObject)
+        }
     }
 
     override fun getItemCount(): Int {

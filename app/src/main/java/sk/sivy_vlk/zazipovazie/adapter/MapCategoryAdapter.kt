@@ -1,5 +1,6 @@
 package sk.sivy_vlk.zazipovazie.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,12 +9,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import sk.sivy_vlk.zazipovazie.R
+import sk.sivy_vlk.zazipovazie.model.MapObject
 import sk.sivy_vlk.zazipovazie.model.MapObjectsByCategory
 
 class MapCategoryAdapter(
     private val categories: List<MapObjectsByCategory>,
-    private val categoryCheckedListener: (MapObjectsByCategory, Boolean) -> Unit) :
-    RecyclerView.Adapter<MapCategoryAdapter.CategoryViewHolder>() {
+    private val categoryCheckedListener: (MapObjectsByCategory, Boolean) -> Unit,
+    private val mapObjectClickedListener: (MapObject) -> Unit
+) : RecyclerView.Adapter<MapCategoryAdapter.CategoryViewHolder>() {
 
     private fun toggleCategoryExpansion(position: Int) {
         val category = categories[position]
@@ -42,7 +45,9 @@ class MapCategoryAdapter(
         // Set up the RecyclerView for objects in this category
 //        holder.objectsRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
         holder.objectsRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
-        holder.objectsRecyclerView.adapter = MapObjectAdapter(category.mapObjects)
+        holder.objectsRecyclerView.adapter = MapObjectAdapter(category.mapObjects) { mapObject ->
+            mapObjectClickedListener(mapObject)
+        }
 
         holder.showCategory.isChecked = category.isShowed
         holder.showCategory.setOnCheckedChangeListener { _, isChecked ->
@@ -54,6 +59,7 @@ class MapCategoryAdapter(
         holder.expandButton.rotation = if (category.isExpanded) 180f else 0f
 
         holder.itemView.setOnClickListener {
+            Log.d("MapCategoryAd", "setOnClickListener")
             toggleCategoryExpansion(position)
         }
     }
