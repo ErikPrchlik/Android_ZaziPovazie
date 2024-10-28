@@ -58,11 +58,11 @@ internal class ImageFragment : Fragment() {
 
                     }
                     override fun onError(e: Exception?) {
-                        imageView.setImageResource(R.drawable.placeholder_error)
+                        imageView.setImageResource(R.drawable.placeholder)
                     }
                 })
         } else {
-            imageView.setImageResource(R.drawable.placeholder_error)
+            imageView.setImageResource(R.drawable.placeholder)
         }    }
 }
 //class PhotoPagerAdapter(

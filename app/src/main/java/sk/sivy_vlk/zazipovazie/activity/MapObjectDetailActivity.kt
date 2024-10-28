@@ -69,7 +69,9 @@ class MapObjectDetailActivity : AppCompatActivity() {
             }
 
             binding.placeObjectContent.mapObjectDescription.text = mapObject.description
-            binding.appBarLayout.photoView.setImages(supportFragmentManager, lifecycle, listOf(mapObject.image))
+
+            val images = mapObject.image.split(" ")
+            binding.appBarLayout.photoView.setImages(supportFragmentManager, lifecycle, images)
         } else {
             Log.e("LogMapObjectDetailActivity", "MapObject is null")
         }
