@@ -21,6 +21,8 @@ picasso = "2.8"
 playServicesMaps = "18.2.0"
 secretsGradlePlugin = "2.0.1"
 viewpagerindicator = "2.4.1"
+lifecycleLivedataKtx = "2.7.0"
+lifecycleViewmodelKtx = "2.7.0"
 
 [libraries]
 android-maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
@@ -44,6 +46,8 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

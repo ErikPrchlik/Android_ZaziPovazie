@@ -2,6 +2,7 @@ package sk.sivy_vlk.zazipovazie
 
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -57,7 +58,7 @@ class MainActivity
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
+//        setSupportActionBar(binding.toolbar)
 
         viewModel.start()
 
@@ -125,14 +126,18 @@ class MainActivity
 
                         viewModel.mapCategories.collect { categories ->
                             mapCategories = if (categories is State.Success) categories.data else arrayListOf()
-                            binding.menu.setOnClickListener {
+                            binding.content.menu.setOnClickListener {
                                 val fragmentManager: FragmentManager = supportFragmentManager
                                 val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
                                 val fragment = CategoryScrollingFragment.newInstance(mapCategories)
                                 val existingFragment: Fragment? = fragmentManager.findFragmentByTag(CATEGORY_MENU)
                                 if (existingFragment == null) {
+                                    binding.content.menu.setImageResource(R.drawable.baseline_close_24)
+                                    binding.content.fragmentCategory.visibility = View.VISIBLE
                                     fragmentTransaction.add(R.id.fragment_category, fragment, CATEGORY_MENU)
                                 } else {
+                                    binding.content.menu.setImageResource(R.drawable.baseline_dehaze_24)
+                                    binding.content.fragmentCategory.visibility = View.GONE
                                     fragmentTransaction.remove(existingFragment)
                                 }
                                 fragmentTransaction.commit()

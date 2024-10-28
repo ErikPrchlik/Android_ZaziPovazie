@@ -7,32 +7,34 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
+<!--    <com.google.android.material.appbar.AppBarLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:fitsSystemWindows="true">-->
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:layout_gravity="end|center">
+<!--        <com.google.android.material.appbar.MaterialToolbar-->
+<!--            android:id="@+id/toolbar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?attr/actionBarSize"-->
+<!--            android:layout_gravity="end|center">-->
 
-            <ImageButton
-                android:id="@+id/menu"
-                android:layout_gravity="end|center"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginEnd="@dimen/fab_margin"
-                android:src="@drawable/baseline_dehaze_24"
-                android:background="#00000000"
-                app:tint="@color/black"/>
+<!--&lt;!&ndash;            <ImageButton&ndash;&gt;-->
+<!--&lt;!&ndash;                android:id="@+id/menu"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_gravity="end|center"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_width="50dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_height="50dp"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:layout_marginEnd="@dimen/fab_margin"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:src="@drawable/baseline_dehaze_24"&ndash;&gt;-->
+<!--&lt;!&ndash;                android:background="#00000000"&ndash;&gt;-->
+<!--&lt;!&ndash;                app:tint="@color/black"/>&ndash;&gt;-->
 
-        </com.google.android.material.appbar.MaterialToolbar>
+<!--        </com.google.android.material.appbar.MaterialToolbar>-->
 
-    </com.google.android.material.appbar.AppBarLayout>
+<!--    </com.google.android.material.appbar.AppBarLayout>-->
 
-    <include layout="@layout/content_main" />
+    <include
+        android:id="@+id/content"
+        layout="@layout/content_main" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

@@ -34,7 +34,6 @@
             android:exported="false"
             android:theme="@style/Theme.ZaziPovazie">
         </activity>
-
         <activity
             android:name=".SplashScreenActivity"
             android:exported="true"
