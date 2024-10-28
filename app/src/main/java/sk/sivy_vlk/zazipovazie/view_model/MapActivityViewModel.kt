@@ -54,18 +54,6 @@ class MapActivityViewModel(private val app: Application,
         }
     }
 
-    fun reload() {
-        viewModelScope.launch {
-            try {
-                val jobLoadKMLFromInternalStorage = async { loadKMLFromInternalStorage() }
-                val jobLoadKMZ = async { loadKMZ() }
-                jobLoadKMLFromInternalStorage.await()
-                jobLoadKMZ.await()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
 
     private fun downloadKMZFile() = viewModelScope.launch {
         _dataState.emit(State.Loading)
@@ -99,7 +87,7 @@ class MapActivityViewModel(private val app: Application,
                         }
                     }
                     is State.NoData -> _mapObjectsState.emit(State.NoData(R.string.no_data))
-                    is State.Error -> _mapObjectsState.emit(State.Error(R.string.communication_error))
+                    is State.Error -> loadKMLFromInternalStorage()
                     State.Loading -> _mapObjectsState.emit(State.Loading)
                 }
             }
@@ -150,7 +138,6 @@ class MapActivityViewModel(private val app: Application,
 
     private fun loadKMLFromInternalStorage() {
         viewModelScope.launch {
-            _mapObjectsState.emit(State.Loading)
             _iconImages = findIconImages(File(app.applicationContext.cacheDir, "temp"))
             try {
                 val file = File(app.applicationContext.filesDir, "saved_kml.kml")
@@ -162,7 +149,7 @@ class MapActivityViewModel(private val app: Application,
                     _mapObjectsState.emit(State.NoData(R.string.no_data))
                 }
             } catch (e: IOException) {
-                _mapObjectsState.emit(State.Error(R.string.no_data))
+                _mapObjectsState.emit(State.Error(R.string.communication_error))
                 e.printStackTrace()
             }
         }

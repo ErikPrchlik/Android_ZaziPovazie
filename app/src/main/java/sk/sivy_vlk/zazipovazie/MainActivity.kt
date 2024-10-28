@@ -6,8 +6,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -186,20 +184,14 @@ class MainActivity
                     is State.NoData -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
                         binding.reload.visibility = View.VISIBLE
-                        binding.reload.setOnClickListener {
-                            binding.reload.visibility = View.GONE
-                            viewModel.start()
-                        }
                     }
                     is State.Error -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
                         binding.reload.visibility = View.VISIBLE
-                        binding.reload.setOnClickListener {
-                            binding.reload.visibility = View.GONE
-                            viewModel.reload()
-                        }
                     }
-                    State.Loading -> {}
+                    State.Loading -> {
+                        binding.reload.visibility = View.GONE
+                    }
                 }
             }
         }
