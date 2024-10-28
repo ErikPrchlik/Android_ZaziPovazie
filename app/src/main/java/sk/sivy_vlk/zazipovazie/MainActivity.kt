@@ -169,9 +169,21 @@ class MainActivity
                             setOnClickListener()
                         }
                     }
+                    is State.NoData -> {
+                        Log.e("LogMainActivity", getString(state.errorMessage))
+                        binding.reload.visibility = View.VISIBLE
+                        binding.reload.setOnClickListener {
+                            binding.reload.visibility = View.GONE
+                            viewModel.start()
+                        }
+                    }
                     is State.Error -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
                         binding.reload.visibility = View.VISIBLE
+                        binding.reload.setOnClickListener {
+                            binding.reload.visibility = View.GONE
+                            viewModel.reload()
+                        }
                     }
                     State.Loading -> {}
                 }

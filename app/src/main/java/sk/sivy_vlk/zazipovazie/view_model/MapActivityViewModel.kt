@@ -1,6 +1,7 @@
 package sk.sivy_vlk.zazipovazie.view_model
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.async
@@ -19,6 +20,7 @@ import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.StringReader
@@ -45,6 +47,19 @@ class MapActivityViewModel(private val app: Application,
 //                _dataState.emit(State.Success(app.applicationContext.assets.open("map_file.kmz")))
                 val jobLoadKMZ = async { loadKMZ() }
                 jobDownloadKMZ.await()
+                jobLoadKMZ.await()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun reload() {
+        viewModelScope.launch {
+            try {
+                val jobLoadKMLFromInternalStorage = async { loadKMLFromInternalStorage() }
+                val jobLoadKMZ = async { loadKMZ() }
+                jobLoadKMLFromInternalStorage.await()
                 jobLoadKMZ.await()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -80,9 +95,10 @@ class MapActivityViewModel(private val app: Application,
                         if (!mapObjects.isNullOrEmpty()) {
                             _mapObjectsState.emit(State.Success(mapObjects))
                         } else {
-                            _mapObjectsState.emit(State.Error(R.string.no_data))
+                            _mapObjectsState.emit(State.NoData(R.string.no_data))
                         }
                     }
+                    is State.NoData -> _mapObjectsState.emit(State.NoData(R.string.no_data))
                     is State.Error -> _mapObjectsState.emit(State.Error(R.string.communication_error))
                     State.Loading -> _mapObjectsState.emit(State.Loading)
                 }
@@ -114,12 +130,42 @@ class MapActivityViewModel(private val app: Application,
                     byteArrayOutputStream.write(buffer, 0, length)
                 }
                 kmlContent = byteArrayOutputStream.toString("UTF-8")
+                saveKMLToInternalStorage(app.applicationContext, kmlContent)
                 break
             }
             zipEntry = zipInputStream.nextEntry
         }
         zipInputStream.close()
         return kmlContent
+    }
+
+    private fun saveKMLToInternalStorage(context: Context, kmlContent: String) {
+        try {
+            val file = File(context.filesDir, "saved_kml.kml")
+            FileOutputStream(file).use { it.write(kmlContent.toByteArray(Charsets.UTF_8)) }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun loadKMLFromInternalStorage() {
+        viewModelScope.launch {
+            _mapObjectsState.emit(State.Loading)
+            _iconImages = findIconImages(File(app.applicationContext.cacheDir, "temp"))
+            try {
+                val file = File(app.applicationContext.filesDir, "saved_kml.kml")
+                val kmlContent = file.readText(Charsets.UTF_8)
+                val mapObjects = parseKMLContent(kmlContent)
+                if (mapObjects.isNotEmpty()) {
+                    _mapObjectsState.emit(State.Success(mapObjects))
+                } else {
+                    _mapObjectsState.emit(State.NoData(R.string.no_data))
+                }
+            } catch (e: IOException) {
+                _mapObjectsState.emit(State.Error(R.string.no_data))
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun parseKMLContent(kmlContent: String): List<MapObject> {
