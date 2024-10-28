@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -153,17 +155,29 @@ class MainActivity
                             binding.content.menu.setOnClickListener {
                                 val fragmentManager: FragmentManager = supportFragmentManager
                                 val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+                                // Load the fragment or find the existing instance by tag
                                 val fragment = CategoryScrollingFragment.newInstance(mapCategories)
                                 val existingFragment: Fragment? = fragmentManager.findFragmentByTag(CATEGORY_MENU)
                                 if (existingFragment == null) {
+                                    // Set the animation for adding the fragment
+                                    fragmentTransaction.setCustomAnimations(
+                                        R.anim.slide_in_right, // Enter animation
+                                        R.anim.slide_out_left  // Exit animation when removed
+                                    )
+                                    // Change the icon to a close button and make the fragment visible
                                     binding.content.menu.setImageResource(R.drawable.baseline_close_24)
                                     binding.content.fragmentCategory.visibility = View.VISIBLE
+
+                                    // Add the fragment with the animation
                                     fragmentTransaction.add(R.id.fragment_category, fragment, CATEGORY_MENU)
                                 } else {
-                                    binding.content.menu.setImageResource(R.drawable.baseline_dehaze_24)
                                     binding.content.fragmentCategory.visibility = View.GONE
+                                    // Change the icon back to menu button
+                                    binding.content.menu.setImageResource(R.drawable.baseline_dehaze_24)
+                                    // Remove the fragment
                                     fragmentTransaction.remove(existingFragment)
                                 }
+                                // Commit the transaction
                                 fragmentTransaction.commit()
                             }
                             setOnClickListener()
