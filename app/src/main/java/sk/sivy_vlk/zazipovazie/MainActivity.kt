@@ -2,7 +2,7 @@ package sk.sivy_vlk.zazipovazie
 
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -17,9 +17,10 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.collections.MarkerManager
+import com.google.maps.android.collections.PolylineManager
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import sk.sivy_vlk.zazipovazie.activity.TripListActivity
@@ -42,7 +43,10 @@ class MainActivity
     private var mapObjects: List<MapObject> = listOf()
     private var mapCategories = arrayListOf<MapObjectsByCategory>()
 
+    private var selectedObject: MapObject? = null
+
     private var markerManager: MarkerManager? = null
+    private var polylineManager: PolylineManager? = null
 
     private lateinit var googleMap: GoogleMap
     private var mapFragment: SupportMapFragment? = null
@@ -78,6 +82,7 @@ class MainActivity
     override fun onMapReady(gMap: GoogleMap) {
         googleMap = gMap
         markerManager = MarkerManager(googleMap)
+        polylineManager = PolylineManager(googleMap)
 
         val latLng = LatLng(48.9534531, 18.1661339) // specify your latitude and longitude here
         val zoomLevel = 12f // specify your zoom level here
@@ -87,6 +92,7 @@ class MainActivity
         observeState()
 
         googleMap.setOnMapClickListener {
+            unselectMapObject()
             removeInfoWindowFragment(false, INFO_WINDOW)
             removeInfoWindowFragment(false, CATEGORY_MENU)
         }
@@ -101,28 +107,46 @@ class MainActivity
                         mapObjects = state.data
 
                         mapObjects.forEach {
-                            val latLng = LatLng(it.latLng.latitude, it.latLng.longitude)
-                            val markerOptions = MarkerOptions()
-                                .title(it.name)
-                                .snippet(it.category)
-                                .position(latLng)
-                                .visible(false)
-                            if (it.icon != null) {
-                                val fileInputStream = FileInputStream(it.icon)
-                                val bitmap = BitmapFactory.decodeStream(fileInputStream)
-                                fileInputStream.close()
-                                // Create a BitmapDescriptor from the bitmap
-                                val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
-                                markerOptions.icon(bitmapDescriptor)
+                            if (it.coordinates.size > 1) {
+                                val polylineOptions = PolylineOptions()
+                                it.coordinates.forEach { latLng ->
+                                    val point = LatLng(latLng.latitude, latLng.longitude)
+                                    polylineOptions.add(point)
+                                }
+                                if (polylineManager!!.getCollection(it.category) == null) {
+                                    polylineManager!!.newCollection(it.category)
+                                }
+                                polylineManager!!.getCollection(it.category)?.addPolyline(
+                                    polylineOptions
+                                        .width(10f)
+                                        .color(Color.BLUE)
+                                        .geodesic(true)
+                                        .clickable(true)
+                                        .visible(false)
+                                )?.tag = it.id
+                            } else {
+                                val latLng = LatLng(it.coordinates[0].latitude, it.coordinates[0].longitude)
+                                val markerOptions = MarkerOptions()
+                                    .title(it.name)
+                                    .snippet(it.category)
+                                    .position(latLng)
+                                    .visible(false)
+                                if (it.icon != null) {
+                                    val fileInputStream = FileInputStream(it.icon)
+                                    val bitmap = BitmapFactory.decodeStream(fileInputStream)
+                                    fileInputStream.close()
+                                    // Create a BitmapDescriptor from the bitmap
+                                    val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+                                    markerOptions.icon(bitmapDescriptor)
+                                }
+                                if (markerManager!!.getCollection(it.category) == null) {
+                                    markerManager!!.newCollection(it.category)
+                                }
+                                markerManager!!.getCollection(it.category)?.addMarker(
+                                    markerOptions
+                                )?.tag = it.id
                             }
-                            if (markerManager!!.getCollection(it.category) == null) {
-                                markerManager!!.newCollection(it.category)
-                            }
-                            markerManager!!.getCollection(it.category)?.addMarker(
-                                markerOptions
-                            )?.tag = it.id
                         }
-
 
                         viewModel.mapCategories.collect { categories ->
                             mapCategories = if (categories is State.Success) categories.data else arrayListOf()
@@ -142,7 +166,7 @@ class MainActivity
                                 }
                                 fragmentTransaction.commit()
                             }
-                            setOnMarkerClickListener()
+                            setOnClickListener()
                         }
                     }
                     is State.Error -> {
@@ -155,23 +179,32 @@ class MainActivity
         }
     }
 
-    private fun setOnMarkerClickListener() {
+    private fun setOnClickListener() {
         mapCategories.forEach {
+            polylineManager!!.getCollection(it.name)?.showAll()
+            polylineManager!!.getCollection(it.name)?.setOnPolylineClickListener { polyline ->
+                polyline.color = Color.RED
+                val id = polyline.tag as Int
+                val mapObject = mapObjects.firstOrNull { mapObject -> mapObject.id == id }
+                showInfoWindowFragment(mapObject)
+            }
             markerManager!!.getCollection(it.name)?.showAll()
-            markerManager!!.getCollection(it.name).setOnMarkerClickListener { marker ->
-                showInfoWindowFragment(marker)
+            markerManager!!.getCollection(it.name)?.setOnMarkerClickListener { marker ->
+                val id = marker.tag as Int
+                val mapObject = mapObjects.firstOrNull { mapObject -> mapObject.id == id }
+                showInfoWindowFragment(mapObject)
                 true
             }
         }
     }
 
-    private fun showInfoWindowFragment(marker: Marker) {
+    private fun showInfoWindowFragment(mapObject: MapObject?) {
+        unselectMapObject()
+        selectMapObject(mapObject)
 
         val fragmentTransaction = removeInfoWindowFragment(true, INFO_WINDOW)
 
         // Add the new fragment
-        val id = marker.tag as Int
-        val mapObject = mapObjects.firstOrNull { it.id == id }
         val infoWindowFragment = InfoWindowFragment.newInstance(mapObject)
         fragmentTransaction.add(R.id.fragment_info_window, infoWindowFragment, INFO_WINDOW)
         fragmentTransaction.commit()
@@ -189,6 +222,20 @@ class MainActivity
         return fragmentTransaction
     }
 
+    private fun selectMapObject(mapObject: MapObject?) {
+        selectedObject = mapObject
+        polylineManager!!.getCollection(mapObject?.category)?.polylines
+            ?.find { polyline -> mapObject?.id == polyline.tag }?.color = Color.RED
+    }
+
+    private fun unselectMapObject() {
+        polylineManager!!.getCollection(selectedObject?.category)?.polylines
+            ?.find { polyline -> selectedObject?.id == polyline.tag }?.color = Color.BLUE
+//            markerManager!!.getCollection(selectedObject?.category)?.markers
+//                ?.find { marker -> selectedObject?.id == marker.tag }?.color = Color.BLUE
+        selectedObject = null
+    }
+
     // Implement the interface method
     override fun onCategoryChecked(category: MapObjectsByCategory, isChecked: Boolean) {
         if (!isChecked) {
@@ -201,23 +248,25 @@ class MainActivity
     }
 
     private fun removeMarkersForCategory(category: MapObjectsByCategory) {
-        markerManager!!.getCollection(category.name).hideAll()
+        markerManager!!.getCollection(category.name)?.hideAll()
+        polylineManager!!.getCollection(category.name)?.hideAll()
         val index = mapCategories.indexOfFirst { it.name == category.name }
         mapCategories[index].isShowed = false
     }
 
     private fun addMarkersForCategory(category: MapObjectsByCategory) {
-        markerManager!!.getCollection(category.name).showAll()
+        markerManager!!.getCollection(category.name)?.showAll()
+        polylineManager!!.getCollection(category.name)?.showAll()
         val index = mapCategories.indexOfFirst { it.name == category.name }
         mapCategories[index].isShowed = true
     }
 
     override fun categoryMapObjectClicked(mapObject: MapObject) {
-        val latLng = LatLng(mapObject.latLng.latitude, mapObject.latLng.longitude)
+        val positionalCategory = mapObject.coordinates.size.div(2)
+        val latLng = LatLng(mapObject.coordinates[positionalCategory].latitude, mapObject.coordinates[positionalCategory].longitude)
         val cameraUpdate = CameraUpdateFactory.newLatLng(latLng)
         googleMap.animateCamera(cameraUpdate)
 
-        val marker = markerManager!!.getCollection(mapObject.category).markers.find { it.tag == mapObject.id }
-        marker?.let { showInfoWindowFragment(it) }
+        showInfoWindowFragment(mapObject)
     }
 }

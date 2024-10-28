@@ -142,7 +142,7 @@ class MapActivityViewModel(private val app: Application,
         var web = ""
         var address = ""
         var image = ""
-        var latLng: ParcelableLatLng? = null
+        val latLongArray = mutableListOf<ParcelableLatLng>()
         var inStyle = false
         var inIcon = false
         var styleId = ""
@@ -171,8 +171,25 @@ class MapActivityViewModel(private val app: Application,
                     } else if (tagName.equals("name", ignoreCase = true) && inPlaceMark) {
                         placeMarkName = parser.nextText().trim()
                     } else if (tagName.equals("coordinates", ignoreCase = true) && inPlaceMark) {
-                        val coordinates = parser.nextText().trim().split(",")
-                        latLng = ParcelableLatLng(coordinates[1].toDouble(), coordinates[0].toDouble())
+                        val data = parser.nextText().trim()
+                        val coordinates = if (data.contains(",0")) {
+                           data.split(",0")
+                        } else {
+                            listOf(data)
+                        }
+                        if (coordinates.size == 2) {
+                            val pointCoord = coordinates[0].trim().split(",")
+                            if (pointCoord.size == 2) {
+                                latLongArray.add(ParcelableLatLng(pointCoord[1].toDouble(), pointCoord[0].toDouble()))
+                            }
+                        } else {
+                            coordinates.forEach {
+                                val lineCoord = it.trim().split(",")
+                                if (lineCoord.size == 2) {
+                                    latLongArray.add(ParcelableLatLng(lineCoord[1].toDouble(), lineCoord[0].toDouble()))
+                                }
+                            }
+                        }
                     } else if (tagName.equals("Data", ignoreCase = true) && inPlaceMark) {
                         tagClass = parser.getAttributeValue(null, "name")
                         inData = true
@@ -203,14 +220,22 @@ class MapActivityViewModel(private val app: Application,
                         inFolder = false
                     } else if (tagName.equals("Placemark", ignoreCase = true) && inPlaceMark) {
                         // Draw placemark on map
-                        if (latLng != null) {
+                        if (latLongArray.isNotEmpty()) {
                             mapObjects.add(
                                 MapObject(
                                     id, name = placeMarkName, category = folderName,
                                     description, phone, web, email, address,
-                                    image, latLng, styleCategory
+                                    image, latLongArray.toList(), styleCategory
                                 )
                             )
+                            description = ""
+                            phone = ""
+                            web = ""
+                            email = ""
+                            address = ""
+                            image = ""
+                            latLongArray.clear()
+                            styleCategory = ""
                         }
                         inPlaceMark = false
                     } else if (tagName.equals("Data", ignoreCase = true) && inData) {

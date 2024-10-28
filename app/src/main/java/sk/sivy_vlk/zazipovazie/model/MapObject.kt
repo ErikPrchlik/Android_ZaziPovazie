@@ -13,7 +13,7 @@ data class MapObject(
     val email: String,
     val address: String,
     val image: String,
-    val latLng: ParcelableLatLng,
+    val coordinates: List<ParcelableLatLng>,
     val categoryIconPath: String,
     var iconUrl: String? = null,
     var icon: File? = null
