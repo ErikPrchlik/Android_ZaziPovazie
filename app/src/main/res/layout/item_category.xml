@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/show_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"/>
+
+        <!-- Category Title -->
+        <TextView
+            android:id="@+id/tv_category_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Category Name"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <ImageView
+            android:id="@+id/expandButton"
+            android:layout_width="@dimen/fab_margin"
+            android:layout_height="@dimen/fab_margin"
+            android:layout_marginStart="@dimen/fab_margin"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/baseline_arrow_drop_down_circle_24"
+            app:tint="@color/black"/>
+
+
+    </LinearLayout>
+
+    <!-- RecyclerView for objects in the category -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_objects"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/fab_margin"
+        android:paddingEnd="8dp"
+        android:nestedScrollingEnabled="false"/>
+
+</LinearLayout>
