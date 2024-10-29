@@ -7,31 +7,6 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-<!--    <com.google.android.material.appbar.AppBarLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:fitsSystemWindows="true">-->
-
-<!--        <com.google.android.material.appbar.MaterialToolbar-->
-<!--            android:id="@+id/toolbar"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="?attr/actionBarSize"-->
-<!--            android:layout_gravity="end|center">-->
-
-<!--&lt;!&ndash;            <ImageButton&ndash;&gt;-->
-<!--&lt;!&ndash;                android:id="@+id/menu"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:layout_gravity="end|center"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:layout_width="50dp"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:layout_height="50dp"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:layout_marginEnd="@dimen/fab_margin"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:src="@drawable/baseline_dehaze_24"&ndash;&gt;-->
-<!--&lt;!&ndash;                android:background="#00000000"&ndash;&gt;-->
-<!--&lt;!&ndash;                app:tint="@color/black"/>&ndash;&gt;-->
-
-<!--        </com.google.android.material.appbar.MaterialToolbar>-->
-
-<!--    </com.google.android.material.appbar.AppBarLayout>-->
-
     <include
         android:id="@+id/content"
         layout="@layout/content_main" />
@@ -44,16 +19,6 @@
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="@dimen/fab_margin"
         app:srcCompat="@android:drawable/ic_dialog_email" />
-
-<!--    <Button-->
-<!--        android:id="@+id/reload"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_gravity="bottom|center"-->
-<!--        android:layout_marginEnd="@dimen/fab_margin"-->
-<!--        android:layout_marginBottom="16dp"-->
-<!--        android:text="@string/app_name"-->
-<!--        />-->
 
     <androidx.cardview.widget.CardView
         android:id="@+id/reload"

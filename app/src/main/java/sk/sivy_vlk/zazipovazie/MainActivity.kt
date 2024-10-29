@@ -92,6 +92,8 @@ class MainActivity
         observeState()
 
         googleMap.setOnMapClickListener {
+            binding.content.fragmentCategory.visibility = View.GONE
+            binding.content.menu.setImageResource(R.drawable.baseline_dehaze_24)
             unselectMapObject()
             removeInfoWindowFragment(false, INFO_WINDOW)
             removeInfoWindowFragment(false, CATEGORY_MENU)
