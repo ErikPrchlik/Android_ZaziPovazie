@@ -69,10 +69,6 @@ class MainActivity
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment!!.getMapAsync(this)
 
-        binding.fab.setOnClickListener {
-            startActivity(Intent(this, TripListActivity::class.java))
-        }
-
         binding.reload.setOnClickListener {
             binding.reload.visibility = View.GONE
             viewModel.start()
