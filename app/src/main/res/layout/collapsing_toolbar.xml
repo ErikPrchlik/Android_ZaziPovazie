@@ -47,6 +47,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
+                <ImageButton
+                    android:id="@+id/back"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/baseline_arrow_back_24"
+                    android:foregroundTint="@color/white"
+                    android:background="#00000000"/>
+
     <!--                <cz.mendelu.pef.smartpef.views.InternetConnectionErrorView-->
     <!--                    android:id="@+id/internetConnectionError"-->
     <!--                    android:layout_width="match_parent"-->

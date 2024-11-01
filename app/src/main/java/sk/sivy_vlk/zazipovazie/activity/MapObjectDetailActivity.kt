@@ -72,5 +72,8 @@ class MapObjectDetailActivity : AppCompatActivity() {
             Log.e("LogMapObjectDetailActivity", "MapObject is null")
         }
 
+        binding.appBarLayout.back.setOnClickListener {
+            finish()
+        }
     }
 }
