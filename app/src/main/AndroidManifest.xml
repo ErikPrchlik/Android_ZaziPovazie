@@ -18,6 +18,10 @@
         android:theme="@style/Theme.ZaziPovazie"
         tools:targetApi="31">
         <activity
+            android:name=".activity.AboutActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ZaziPovazie" />
+        <activity
             android:name=".activity.TripDetailActivity"
             android:exported="false"
             android:theme="@style/Theme.ZaziPovazie" />
@@ -32,15 +36,15 @@
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:theme="@style/Theme.ZaziPovazie">
-        </activity>
+            android:theme="@style/Theme.ZaziPovazie"></activity>
         <activity
             android:name=".SplashScreenActivity"
-            android:windowSoftInputMode="adjustResize"
             android:exported="true"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/SplashTheme"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

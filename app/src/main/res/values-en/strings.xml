@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Zaži na Považí</string>
+    <string name="reload">Reload</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="communication_error">Something went wrong during COMMUNICATION</string>
+    <string name="communication_exception">Something went wrong during COMMUNICATION - Exception</string>
+    <string name="no_data">Something went wrong - NO DATA</string>
+    <string name="trip_recommendations">Trip recommendations</string>
+    <string name="whole_day_trips">Whole day trips</string>
+    <string name="short_term_trips">Short term trips</string>
+
+    <string name="about_project">About project</string>
+    <string name="about_project_description">O projekte</string>
+
+    <string name="contact">Contact</string>
+    <string name="contact_web">https://zazinapovazi.sk/</string>
+    <string name="contact_address">K dolnej stanici 7282/20 A, 911 01 Trencin</string>
+    <string name="contact_phone">+421 905 680 840</string>
+    <string name="contact_email">info@zazinapovazi.sk</string>
+</resources>
