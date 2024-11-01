@@ -1,23 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/ll_map_object"
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="8dp">
+    app:cardCornerRadius="10dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="4dp">
 
-    <ImageView
-        android:id="@+id/iv_map_object"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:id="@+id/ll_map_object">
 
-    <!-- Object Name -->
-    <TextView
-        android:id="@+id/tv_object_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingStart="8dp"
-        android:text="Object Name"/>
+        <ImageView
+            android:id="@+id/iv_map_object"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-</LinearLayout>
+        <!-- Object Name -->
+        <TextView
+            android:id="@+id/tv_object_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="0dp"
+            android:text="Object Name"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
