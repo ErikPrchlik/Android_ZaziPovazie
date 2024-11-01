@@ -1,5 +1,6 @@
 package sk.sivy_vlk.zazipovazie.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import sk.sivy_vlk.zazipovazie.model.MapObject
 import sk.sivy_vlk.zazipovazie.model.MapObjectsByCategory
 
 class MapCategoryAdapter(
+    private val context: Context,
     private val categories: List<MapObjectsByCategory>,
     private val categoryCheckedListener: (MapObjectsByCategory, Boolean) -> Unit,
     private val mapObjectClickedListener: (MapObject) -> Unit
@@ -44,7 +46,7 @@ class MapCategoryAdapter(
         // Set up the RecyclerView for objects in this category
 //        holder.objectsRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
         holder.objectsRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
-        holder.objectsRecyclerView.adapter = MapObjectAdapter(category.mapObjects) { mapObject ->
+        holder.objectsRecyclerView.adapter = MapObjectAdapter(context, category.mapObjects) { mapObject ->
             mapObjectClickedListener(mapObject)
         }
 

@@ -38,6 +38,7 @@ class CategoryScrollingFragment : Fragment() {
             val categoriesRecyclerView = view.findViewById<RecyclerView>(R.id.rv_categories)
             categoriesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             categoriesRecyclerView.adapter = MapCategoryAdapter(
+                requireActivity().baseContext,
                 it,
                 { category, isChecked ->
                     // Pass the state change to the MainActivity via the interface

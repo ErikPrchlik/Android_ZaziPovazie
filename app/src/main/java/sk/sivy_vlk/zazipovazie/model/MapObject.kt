@@ -12,9 +12,11 @@ data class MapObject(
     val website: String,
     val email: String,
     val address: String,
-    val image: String,
+    val images: String,
     val coordinates: List<ParcelableLatLng>,
     val categoryIconPath: String,
     var iconUrl: String? = null,
     var icon: File? = null
-): Serializable
+): Serializable {
+    var selected = false
+}

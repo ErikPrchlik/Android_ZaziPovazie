@@ -249,6 +249,7 @@ class MainActivity
             ?.find { polyline -> selectedObject?.id == polyline.tag }?.color = Color.BLUE
 //            markerManager!!.getCollection(selectedObject?.category)?.markers
 //                ?.find { marker -> selectedObject?.id == marker.tag }?.color = Color.BLUE
+        selectedObject?.selected = false
         selectedObject = null
     }
 
