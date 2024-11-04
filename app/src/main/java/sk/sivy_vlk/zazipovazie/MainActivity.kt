@@ -23,6 +23,7 @@ import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.collections.PolylineManager
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import sk.sivy_vlk.zazipovazie.activity.MapObjectDetailActivity
 import sk.sivy_vlk.zazipovazie.activity.TripListActivity
 import sk.sivy_vlk.zazipovazie.databinding.ActivityMainBinding
 import sk.sivy_vlk.zazipovazie.fragment.CategoryScrollingFragment
@@ -202,13 +203,25 @@ class MainActivity
                 polyline.color = Color.RED
                 val id = polyline.tag as Int
                 val mapObject = mapObjects.firstOrNull { mapObject -> mapObject.id == id }
-                showInfoWindowFragment(mapObject)
+                if (mapObject != null && mapObject.selected) {
+                    val intent = Intent(this, MapObjectDetailActivity::class.java)
+                    intent.putExtra("MAP_OBJECT", mapObject)
+                    startActivity(intent)
+                } else {
+                    showInfoWindowFragment(mapObject)
+                }
             }
             markerManager!!.getCollection(it.name)?.showAll()
             markerManager!!.getCollection(it.name)?.setOnMarkerClickListener { marker ->
                 val id = marker.tag as Int
                 val mapObject = mapObjects.firstOrNull { mapObject -> mapObject.id == id }
-                showInfoWindowFragment(mapObject)
+                if (mapObject != null && mapObject.selected) {
+                    val intent = Intent(this, MapObjectDetailActivity::class.java)
+                    intent.putExtra("MAP_OBJECT", mapObject)
+                    startActivity(intent)
+                } else {
+                    showInfoWindowFragment(mapObject)
+                }
                 true
             }
         }
@@ -239,6 +252,7 @@ class MainActivity
     }
 
     private fun selectMapObject(mapObject: MapObject?) {
+        mapObject?.selected = true
         selectedObject = mapObject
         polylineManager!!.getCollection(mapObject?.category)?.polylines
             ?.find { polyline -> mapObject?.id == polyline.tag }?.color = Color.RED
