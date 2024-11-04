@@ -80,7 +80,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:layout_gravity="center_vertical">
+                    android:gravity="center_vertical">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -95,7 +95,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="@string/contact_web"
-                        android:autoLink="web"/>
+                        android:autoLink="web"
+                        android:textIsSelectable="true"/>
 
                 </LinearLayout>
 
@@ -104,7 +105,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:layout_gravity="center_vertical">
+                    android:gravity="center_vertical">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -119,7 +120,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="@string/contact_email"
-                        android:autoLink="email"/>
+                        android:autoLink="email"
+                        android:textIsSelectable="true"/>
 
                 </LinearLayout>
 
@@ -128,7 +130,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:layout_gravity="center_vertical">
+                    android:gravity="center_vertical">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -143,7 +145,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="@string/contact_phone"
-                        android:autoLink="phone"/>
+                        android:autoLink="phone"
+                        android:textIsSelectable="true"/>
 
                 </LinearLayout>
 
@@ -152,7 +155,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:layout_gravity="center_vertical">
+                    android:gravity="center_vertical">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -167,7 +170,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="@string/contact_address"
-                        android:autoLink="map"/>
+                        android:autoLink="map"
+                        android:textIsSelectable="true"/>
 
                 </LinearLayout>
 
