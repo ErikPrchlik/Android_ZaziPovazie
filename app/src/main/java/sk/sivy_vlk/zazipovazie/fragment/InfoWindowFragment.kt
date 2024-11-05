@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import sk.sivy_vlk.zazipovazie.R
@@ -16,6 +17,7 @@ import sk.sivy_vlk.zazipovazie.utils.serializable
 class InfoWindowFragment : Fragment() {
     private var titleTextView: TextView? = null
     private var snippetTextView: TextView? = null
+    private var closeImageView: ImageView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,12 +27,18 @@ class InfoWindowFragment : Fragment() {
         val view: View = inflater.inflate(R.layout.fragment_info_window, container, false)
         titleTextView = view.findViewById(R.id.title)
         snippetTextView = view.findViewById(R.id.snippet)
+        closeImageView = view.findViewById(R.id.close)
 
         // Set data passed from activity or fragment
         val mapObject = arguments?.serializable("MAP_OBJECT") as? MapObject
         if (mapObject != null) {
             titleTextView!!.text = mapObject.name
             snippetTextView!!.text = mapObject.category
+        }
+
+        closeImageView?.setOnClickListener {
+            // Dismiss fragment
+            getParentFragmentManager().beginTransaction().remove(this).commit()
         }
 
         view.setOnClickListener {

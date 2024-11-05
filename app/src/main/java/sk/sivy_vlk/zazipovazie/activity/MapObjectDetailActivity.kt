@@ -1,18 +1,18 @@
 package sk.sivy_vlk.zazipovazie.activity
 
+import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import sk.sivy_vlk.zazipovazie.databinding.ActivityMapObjectDetailBinding
 import sk.sivy_vlk.zazipovazie.model.MapObject
 import sk.sivy_vlk.zazipovazie.utils.serializable
 import java.io.FileInputStream
-import java.util.regex.Pattern
+import java.util.Locale
 
 class MapObjectDetailActivity : AppCompatActivity() {
 
@@ -70,11 +70,34 @@ class MapObjectDetailActivity : AppCompatActivity() {
 
             binding.placeObjectContent.mapObjectDescription.text = mapObject.description
 
-            val images = mapObject.image.split(" ")
+            val images = mapObject.images.split(" ")
             binding.appBarLayout.photoView.setImages(supportFragmentManager, lifecycle, images)
         } else {
             Log.e("LogMapObjectDetailActivity", "MapObject is null")
         }
 
+        binding.appBarLayout.navigation.setOnClickListener {
+            openMapActivity(mapObject)
+        }
+
+        binding.placeObjectContent.mapObjectAddressTW.setOnClickListener {
+            openMapActivity(mapObject)
+        }
+
+        binding.appBarLayout.back.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun openMapActivity(mapObject: MapObject?) {
+        val uri = String.format(Locale.ENGLISH, "geo:%f,%f",
+            mapObject!!.coordinates[0].latitude, mapObject.coordinates[0].longitude)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent);
+        } else {
+            // Optionally show a message if no app can handle the intent
+            Toast.makeText(this, "No map application found", Toast.LENGTH_SHORT).show();
+        }
     }
 }

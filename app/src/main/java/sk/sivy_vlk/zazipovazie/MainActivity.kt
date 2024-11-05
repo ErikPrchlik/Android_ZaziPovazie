@@ -1,5 +1,6 @@
 package sk.sivy_vlk.zazipovazie
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -23,7 +24,7 @@ import com.google.maps.android.collections.MarkerManager
 import com.google.maps.android.collections.PolylineManager
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import sk.sivy_vlk.zazipovazie.activity.TripListActivity
+import sk.sivy_vlk.zazipovazie.activity.MapObjectDetailActivity
 import sk.sivy_vlk.zazipovazie.databinding.ActivityMainBinding
 import sk.sivy_vlk.zazipovazie.fragment.CategoryScrollingFragment
 import sk.sivy_vlk.zazipovazie.fragment.InfoWindowFragment
@@ -73,12 +74,19 @@ class MainActivity
             binding.reload.visibility = View.GONE
             viewModel.start()
         }
+
+        binding.content.mapStyle.setOnClickListener { showMapStyleDialog() }
     }
 
     override fun onMapReady(gMap: GoogleMap) {
+        // Set default map type to Satellite (orthophoto)
+        gMap.mapType = GoogleMap.MAP_TYPE_HYBRID;
         googleMap = gMap
         markerManager = MarkerManager(googleMap)
         polylineManager = PolylineManager(googleMap)
+
+        // Enable the map type UI control so users can change the map type
+        googleMap.uiSettings.isMapToolbarEnabled = true
 
         val latLng = LatLng(48.9534531, 18.1661339) // specify your latitude and longitude here
         val zoomLevel = 12f // specify your zoom level here
@@ -202,13 +210,25 @@ class MainActivity
                 polyline.color = Color.RED
                 val id = polyline.tag as Int
                 val mapObject = mapObjects.firstOrNull { mapObject -> mapObject.id == id }
-                showInfoWindowFragment(mapObject)
+                if (mapObject != null && mapObject.selected) {
+                    val intent = Intent(this, MapObjectDetailActivity::class.java)
+                    intent.putExtra("MAP_OBJECT", mapObject)
+                    startActivity(intent)
+                } else {
+                    showInfoWindowFragment(mapObject)
+                }
             }
             markerManager!!.getCollection(it.name)?.showAll()
             markerManager!!.getCollection(it.name)?.setOnMarkerClickListener { marker ->
                 val id = marker.tag as Int
                 val mapObject = mapObjects.firstOrNull { mapObject -> mapObject.id == id }
-                showInfoWindowFragment(mapObject)
+                if (mapObject != null && mapObject.selected) {
+                    val intent = Intent(this, MapObjectDetailActivity::class.java)
+                    intent.putExtra("MAP_OBJECT", mapObject)
+                    startActivity(intent)
+                } else {
+                    showInfoWindowFragment(mapObject)
+                }
                 true
             }
         }
@@ -239,6 +259,7 @@ class MainActivity
     }
 
     private fun selectMapObject(mapObject: MapObject?) {
+        mapObject?.selected = true
         selectedObject = mapObject
         polylineManager!!.getCollection(mapObject?.category)?.polylines
             ?.find { polyline -> mapObject?.id == polyline.tag }?.color = Color.RED
@@ -249,6 +270,7 @@ class MainActivity
             ?.find { polyline -> selectedObject?.id == polyline.tag }?.color = Color.BLUE
 //            markerManager!!.getCollection(selectedObject?.category)?.markers
 //                ?.find { marker -> selectedObject?.id == marker.tag }?.color = Color.BLUE
+        selectedObject?.selected = false
         selectedObject = null
     }
 
@@ -284,5 +306,25 @@ class MainActivity
         googleMap.animateCamera(cameraUpdate)
 
         showInfoWindowFragment(mapObject)
+    }
+
+    private fun showMapStyleDialog() {
+        val mapTypes = arrayOf(
+            getString(R.string.normal),
+            getString(R.string.satellite),
+            getString(R.string.terrain),
+            getString(R.string.hybrid)
+        )
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.choose_map_style))
+            .setItems(mapTypes) { _, which ->
+                when (which) {
+                    0 -> googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
+                    1 -> googleMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
+                    2 -> googleMap.mapType = GoogleMap.MAP_TYPE_TERRAIN
+                    3 -> googleMap.mapType = GoogleMap.MAP_TYPE_HYBRID
+                }
+            }
+            .show()
     }
 }

@@ -5,4 +5,7 @@
     <color name="colorPrimary">#406A2E</color>
     <color name="colorPrimaryDark">#2F4E22</color>
     <color name="colorAccent">#FFFFFFFF</color>
+
+    <color name="dark_gray">#FF202020</color>
+    <color name="transparent">#00000000</color>
 </resources>
