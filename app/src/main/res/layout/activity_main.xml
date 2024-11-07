@@ -48,5 +48,12 @@
 
     </androidx.cardview.widget.CardView>
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="@dimen/fab_margin"
+        android:indeterminateTint="@color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

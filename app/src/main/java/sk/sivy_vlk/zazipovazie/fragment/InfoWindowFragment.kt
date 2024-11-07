@@ -1,5 +1,6 @@
 package sk.sivy_vlk.zazipovazie.fragment
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,9 +16,16 @@ import sk.sivy_vlk.zazipovazie.utils.serializable
 
 
 class InfoWindowFragment : Fragment() {
+
     private var titleTextView: TextView? = null
     private var snippetTextView: TextView? = null
     private var closeImageView: ImageView? = null
+
+    interface OnInfoWindowFragmentCloseListener {
+        fun onInfoWindowFragmentClosed() // Method the activity will implement
+    }
+
+    private var listener: OnInfoWindowFragmentCloseListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +47,7 @@ class InfoWindowFragment : Fragment() {
         closeImageView?.setOnClickListener {
             // Dismiss fragment
             getParentFragmentManager().beginTransaction().remove(this).commit()
+            closeClicked()
         }
 
         view.setOnClickListener {
@@ -48,6 +57,24 @@ class InfoWindowFragment : Fragment() {
             startActivity(intent)
         }
         return view
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        // Ensure the activity implements the listener interface
+        if (context is OnInfoWindowFragmentCloseListener) {
+            listener = context
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        listener = null
+    }
+
+    private fun closeClicked() {
+        // Call the listener's method when action occurs (e.g., on a button click)
+        listener?.onInfoWindowFragmentClosed()
     }
 
     companion object {

@@ -1,17 +1,27 @@
 package sk.sivy_vlk.zazipovazie
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -37,7 +47,8 @@ import java.io.FileInputStream
 class MainActivity
     : AppCompatActivity(), OnMapReadyCallback,
     CategoryScrollingFragment.OnCategoryCheckedListener,
-    CategoryScrollingFragment.OnCategoryMapObjectClickedListener {
+    CategoryScrollingFragment.OnCategoryMapObjectClickedListener,
+    InfoWindowFragment.OnInfoWindowFragmentCloseListener {
 
     private lateinit var binding: ActivityMainBinding
 
@@ -56,6 +67,8 @@ class MainActivity
 
     private val INFO_WINDOW = "INFO_WINDOW"
     private val CATEGORY_MENU = "CATEGORY_MENU"
+
+    private val locationPermissionRequestCode = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +89,10 @@ class MainActivity
         }
 
         binding.content.mapStyle.setOnClickListener { showMapStyleDialog() }
+
+        binding.content.logo.setOnClickListener {
+            zoomToMap()
+        }
     }
 
     override fun onMapReady(gMap: GoogleMap) {
@@ -87,11 +104,15 @@ class MainActivity
 
         // Enable the map type UI control so users can change the map type
         googleMap.uiSettings.isMapToolbarEnabled = true
+        googleMap.uiSettings.isMyLocationButtonEnabled = false
 
-        val latLng = LatLng(48.9534531, 18.1661339) // specify your latitude and longitude here
-        val zoomLevel = 12f // specify your zoom level here
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel)
-        googleMap.animateCamera(cameraUpdate)
+        zoomToMap()
+
+        checkLocationPermission()
+
+        binding.content.userLocation.setOnClickListener {
+            zoomToUserLocation()
+        }
 
         observeState()
 
@@ -185,18 +206,22 @@ class MainActivity
                                 fragmentTransaction.commit()
                             }
                             setOnClickListener()
+                            binding.progressBar.visibility = View.GONE
                         }
                     }
                     is State.NoData -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
                         binding.reload.visibility = View.VISIBLE
+                        binding.progressBar.visibility = View.GONE
                     }
                     is State.Error -> {
                         Log.e("LogMainActivity", getString(state.errorMessage))
                         binding.reload.visibility = View.VISIBLE
+                        binding.progressBar.visibility = View.GONE
                     }
                     State.Loading -> {
                         binding.reload.visibility = View.GONE
+                        binding.progressBar.visibility = View.VISIBLE
                     }
                 }
             }
@@ -261,6 +286,32 @@ class MainActivity
     private fun selectMapObject(mapObject: MapObject?) {
         mapObject?.selected = true
         selectedObject = mapObject
+        if (mapObject?.icon != null) {
+            val fileInputStream = FileInputStream(mapObject.icon)
+            val bitmap = BitmapFactory.decodeStream(fileInputStream)
+            fileInputStream.close()
+            // Create a BitmapDescriptor from the bitmap
+            val circleRadius = (bitmap.width * 1.5).toInt()
+            val backgroundBitmap = Bitmap.createBitmap(circleRadius, circleRadius, Bitmap.Config.ARGB_8888)
+
+            val canvas = Canvas(backgroundBitmap)
+            val paint = Paint().apply {
+                color = Color.WHITE
+                isAntiAlias = true
+            }
+
+            // Draw white circle background
+            canvas.drawOval(RectF(0f, 0f, circleRadius.toFloat(), circleRadius.toFloat()), paint)
+
+            // Draw the original bitmap centered on the circle
+            val left = (circleRadius - bitmap.width) / 2f
+            val top = (circleRadius - bitmap.height) / 2f
+            canvas.drawBitmap(bitmap, left, top, null)
+
+            val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(backgroundBitmap)
+            markerManager!!.getCollection(selectedObject?.category)?.markers
+                ?.find { marker -> selectedObject?.id == marker.tag }?.setIcon(bitmapDescriptor)
+        }
         polylineManager!!.getCollection(mapObject?.category)?.polylines
             ?.find { polyline -> mapObject?.id == polyline.tag }?.color = Color.RED
     }
@@ -268,8 +319,15 @@ class MainActivity
     private fun unselectMapObject() {
         polylineManager!!.getCollection(selectedObject?.category)?.polylines
             ?.find { polyline -> selectedObject?.id == polyline.tag }?.color = Color.BLUE
-//            markerManager!!.getCollection(selectedObject?.category)?.markers
-//                ?.find { marker -> selectedObject?.id == marker.tag }?.color = Color.BLUE
+        if (selectedObject != null && selectedObject?.icon != null) {
+            val fileInputStream = FileInputStream(selectedObject!!.icon)
+            val bitmap = BitmapFactory.decodeStream(fileInputStream)
+            fileInputStream.close()
+            // Create a BitmapDescriptor from the bitmap
+            val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+            markerManager!!.getCollection(selectedObject?.category)?.markers
+                ?.find { marker -> selectedObject?.id == marker.tag }?.setIcon(bitmapDescriptor)
+        }
         selectedObject?.selected = false
         selectedObject = null
     }
@@ -326,5 +384,55 @@ class MainActivity
                 }
             }
             .show()
+    }
+
+    private fun checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            enableUserLocation()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionRequestCode)
+        }
+    }
+
+    private fun enableUserLocation() {
+        // Only enable location if the permission is already granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.isMyLocationEnabled = true
+            zoomToUserLocation()
+        }
+    }
+
+    private fun zoomToUserLocation() {
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
+                location?.let {
+                    val userLatLng = LatLng(location.latitude, location.longitude)
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
+                }
+            }
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionRequestCode)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == locationPermissionRequestCode) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                enableUserLocation()
+            }
+        }
+    }
+
+    private fun zoomToMap() {
+        val latLng = LatLng(48.9534531, 18.1661339) // specify your latitude and longitude here
+        val zoomLevel = 12f // specify your zoom level here
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel)
+        googleMap.animateCamera(cameraUpdate)
+    }
+
+    override fun onInfoWindowFragmentClosed() {
+        unselectMapObject()
     }
 }
