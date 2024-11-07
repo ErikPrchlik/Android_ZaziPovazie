@@ -2,8 +2,12 @@ package sk.sivy_vlk.zazipovazie
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -261,6 +265,32 @@ class MainActivity
     private fun selectMapObject(mapObject: MapObject?) {
         mapObject?.selected = true
         selectedObject = mapObject
+        if (mapObject?.icon != null) {
+            val fileInputStream = FileInputStream(mapObject.icon)
+            val bitmap = BitmapFactory.decodeStream(fileInputStream)
+            fileInputStream.close()
+            // Create a BitmapDescriptor from the bitmap
+            val circleRadius = (bitmap.width * 1.5).toInt()
+            val backgroundBitmap = Bitmap.createBitmap(circleRadius, circleRadius, Bitmap.Config.ARGB_8888)
+
+            val canvas = Canvas(backgroundBitmap)
+            val paint = Paint().apply {
+                color = Color.WHITE
+                isAntiAlias = true
+            }
+
+            // Draw white circle background
+            canvas.drawOval(RectF(0f, 0f, circleRadius.toFloat(), circleRadius.toFloat()), paint)
+
+            // Draw the original bitmap centered on the circle
+            val left = (circleRadius - bitmap.width) / 2f
+            val top = (circleRadius - bitmap.height) / 2f
+            canvas.drawBitmap(bitmap, left, top, null)
+
+            val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(backgroundBitmap)
+            markerManager!!.getCollection(selectedObject?.category)?.markers
+                ?.find { marker -> selectedObject?.id == marker.tag }?.setIcon(bitmapDescriptor)
+        }
         polylineManager!!.getCollection(mapObject?.category)?.polylines
             ?.find { polyline -> mapObject?.id == polyline.tag }?.color = Color.RED
     }
@@ -268,8 +298,15 @@ class MainActivity
     private fun unselectMapObject() {
         polylineManager!!.getCollection(selectedObject?.category)?.polylines
             ?.find { polyline -> selectedObject?.id == polyline.tag }?.color = Color.BLUE
-//            markerManager!!.getCollection(selectedObject?.category)?.markers
-//                ?.find { marker -> selectedObject?.id == marker.tag }?.color = Color.BLUE
+        if (selectedObject != null && selectedObject?.icon != null) {
+            val fileInputStream = FileInputStream(selectedObject!!.icon)
+            val bitmap = BitmapFactory.decodeStream(fileInputStream)
+            fileInputStream.close()
+            // Create a BitmapDescriptor from the bitmap
+            val bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+            markerManager!!.getCollection(selectedObject?.category)?.markers
+                ?.find { marker -> selectedObject?.id == marker.tag }?.setIcon(bitmapDescriptor)
+        }
         selectedObject?.selected = false
         selectedObject = null
     }
