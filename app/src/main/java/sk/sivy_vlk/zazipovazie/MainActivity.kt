@@ -1,8 +1,10 @@
 package sk.sivy_vlk.zazipovazie
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -21,7 +23,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -68,7 +74,8 @@ class MainActivity
     private val INFO_WINDOW = "INFO_WINDOW"
     private val CATEGORY_MENU = "CATEGORY_MENU"
 
-    private val locationPermissionRequestCode = 1
+    private val locationPermissionRequestCode = 1001
+    private val locationSettingsRequestCode = 1002
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,7 +118,7 @@ class MainActivity
         checkLocationPermission()
 
         binding.content.userLocation.setOnClickListener {
-            zoomToUserLocation()
+            checkLocationPermission()
         }
 
         observeState()
@@ -185,10 +192,10 @@ class MainActivity
                                 val existingFragment: Fragment? = fragmentManager.findFragmentByTag(CATEGORY_MENU)
                                 if (existingFragment == null) {
                                     // Set the animation for adding the fragment
-                                    fragmentTransaction.setCustomAnimations(
-                                        R.anim.slide_in_right, // Enter animation
-                                        R.anim.slide_out_left  // Exit animation when removed
-                                    )
+//                                    fragmentTransaction.setCustomAnimations(
+//                                        R.anim.slide_in_right, // Enter animation
+//                                        R.anim.slide_out_left  // Exit animation when removed
+//                                    )
                                     // Change the icon to a close button and make the fragment visible
                                     binding.content.menu.setImageResource(R.drawable.baseline_close_24)
                                     binding.content.fragmentCategory.visibility = View.VISIBLE
@@ -386,22 +393,55 @@ class MainActivity
             .show()
     }
 
+    // Function to check location permission and, if granted, enable location services
     private fun checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            enableUserLocation()
+            checkLocationSettings()  // Check if location services are enabled
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionRequestCode)
         }
     }
 
+    // Function to check location settings and prompt the user to enable if needed
+    private fun checkLocationSettings() {
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY, 10000 // 10 seconds
+        ).apply {
+            setMinUpdateIntervalMillis(5000) // 5 seconds
+        }.build()
+
+        val locationSettingsRequest = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .build()
+
+        val settingsClient = LocationServices.getSettingsClient(this)
+
+        settingsClient.checkLocationSettings(locationSettingsRequest)
+            .addOnSuccessListener {
+                // Location settings are enabled, enable user location
+                enableUserLocation()
+            }
+            .addOnFailureListener { exception ->
+                if (exception is ResolvableApiException) {
+                    try {
+                        // Show the dialog to enable location services
+                        exception.startResolutionForResult(this, locationSettingsRequestCode)
+                    } catch (sendEx: IntentSender.SendIntentException) {
+                        // Handle the exception
+                    }
+                }
+            }
+    }
+
+    // Function to enable user location on the map and zoom to user's location
     private fun enableUserLocation() {
-        // Only enable location if the permission is already granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             googleMap.isMyLocationEnabled = true
             zoomToUserLocation()
         }
     }
 
+    // Function to zoom to the user's current location
     private fun zoomToUserLocation() {
         val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -411,8 +451,6 @@ class MainActivity
                     googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15f))
                 }
             }
-        } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionRequestCode)
         }
     }
 
@@ -420,7 +458,7 @@ class MainActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == locationPermissionRequestCode) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                enableUserLocation()
+                checkLocationSettings()  // Check location settings if permission is granted
             }
         }
     }

@@ -35,11 +35,20 @@ class MapObjectAdapter(
 
     override fun onBindViewHolder(holder: ObjectViewHolder, position: Int) {
         val mapObject = objects[position]
-        if (mapObject.icon != null) {
-            val fileInputStream = FileInputStream(mapObject.icon)
-            val bitmap = BitmapFactory.decodeStream(fileInputStream)
-            fileInputStream.close()
-            holder.objectIcon.setImageBitmap(bitmap)
+        if (mapObject.coordinates.size > 1) {
+            holder.objectIcon.setImageDrawable(null)
+            if (mapObject.selected) {
+                holder.objectIcon.setBackgroundColor(Color.RED)
+            } else {
+                holder.objectIcon.setBackgroundColor(Color.BLUE)
+            }
+        } else {
+            if (mapObject.icon != null) {
+                val fileInputStream = FileInputStream(mapObject.icon)
+                val bitmap = BitmapFactory.decodeStream(fileInputStream)
+                fileInputStream.close()
+                holder.objectIcon.setImageBitmap(bitmap)
+            }
         }
         holder.objectName.text = mapObject.name
 

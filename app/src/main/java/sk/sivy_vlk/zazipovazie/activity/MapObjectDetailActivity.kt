@@ -90,8 +90,9 @@ class MapObjectDetailActivity : AppCompatActivity() {
     }
 
     private fun openMapActivity(mapObject: MapObject?) {
+        val index = mapObject!!.coordinates.size.div(2)
         val uri = String.format(Locale.ENGLISH, "geo:%f,%f",
-            mapObject!!.coordinates[0].latitude, mapObject.coordinates[0].longitude)
+            mapObject.coordinates[0].latitude, mapObject.coordinates[index].longitude)
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent);
