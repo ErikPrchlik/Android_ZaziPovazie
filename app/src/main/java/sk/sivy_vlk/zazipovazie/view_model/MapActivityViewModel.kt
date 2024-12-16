@@ -305,12 +305,20 @@ class MapActivityViewModel(private val app: Application,
         val destinationTempDir = File(app.applicationContext.cacheDir, "temp")
         destinationTempDir.mkdirs()
         val buffer = ByteArray(1024)
+
         try {
             ZipInputStream(kmzFile).use { zis ->
                 var zipEntry = zis.nextEntry
                 while (zipEntry != null) {
                     val fileName = zipEntry.name
                     val newFile = File(destinationTempDir, fileName)
+
+                    // Validate the canonical path to prevent Zip Path Traversal
+                    val canonicalPath = newFile.canonicalPath
+                    if (!canonicalPath.startsWith(destinationTempDir.canonicalPath)) {
+                        throw SecurityException("Invalid ZIP entry: $fileName")
+                    }
+
                     if (zipEntry.isDirectory) {
                         newFile.mkdirs()
                     } else {

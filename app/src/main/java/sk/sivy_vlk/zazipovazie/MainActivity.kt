@@ -188,7 +188,7 @@ class MainActivity
                                 val fragmentManager: FragmentManager = supportFragmentManager
                                 val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
                                 // Load the fragment or find the existing instance by tag
-                                val fragment = CategoryScrollingFragment.newInstance(mapCategories)
+                                val fragment = CategoryScrollingFragment.newInstance()
                                 val existingFragment: Fragment? = fragmentManager.findFragmentByTag(CATEGORY_MENU)
                                 if (existingFragment == null) {
                                     // Set the animation for adding the fragment

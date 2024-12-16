@@ -8,16 +8,25 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import sk.sivy_vlk.zazipovazie.R
 import sk.sivy_vlk.zazipovazie.activity.AboutActivity
 import sk.sivy_vlk.zazipovazie.adapter.MapCategoryAdapter
 import sk.sivy_vlk.zazipovazie.model.MapObject
 import sk.sivy_vlk.zazipovazie.model.MapObjectsByCategory
-import sk.sivy_vlk.zazipovazie.utils.serializable
+import sk.sivy_vlk.zazipovazie.view_model.MapActivityViewModel
+import sk.sivy_vlk.zazipovazie.view_model.State
 
 class CategoryScrollingFragment : Fragment() {
+
+    private val viewModel: MapActivityViewModel by activityViewModels()
+
+    private lateinit var mapCategories: ArrayList<MapObjectsByCategory>
 
     interface OnCategoryCheckedListener {
         fun onCategoryChecked(category: MapObjectsByCategory, isChecked: Boolean)
@@ -46,25 +55,41 @@ class CategoryScrollingFragment : Fragment() {
             context.startActivity(intent)
         }
 
-        val mapObjectsByCategory = arguments?.serializable("MAP_OBJECTS_BY_CATEGORY") as? ArrayList<MapObjectsByCategory>
-        mapObjectsByCategory?.let {
-            val categoriesRecyclerView = view.findViewById<RecyclerView>(R.id.rv_categories)
-            categoriesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-            categoriesRecyclerView.adapter = MapCategoryAdapter(
-                context,
-                it,
-                { category, isChecked ->
-                    // Pass the state change to the MainActivity via the interface
-                    categoryCheckedListener?.onCategoryChecked(category, isChecked)
-                },
-                { mapObject ->
-                    categoryMapObjectClickedListener?.categoryMapObjectClicked(mapObject)
-                }
-            )
-        }
+        observeState(context, view)
 
         return view
     }
+
+    private fun observeState(context: Context, view: View) {
+        lifecycleScope.launch {
+            viewModel.mapObjectsState.collect { state ->
+                when (state) {
+                    is State.Success -> {
+                        viewModel.mapCategories.collect { categories ->
+                            mapCategories = if (categories is State.Success) categories.data else arrayListOf()
+                            val categoriesRecyclerView = view.findViewById<RecyclerView>(R.id.rv_categories)
+                            categoriesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                            categoriesRecyclerView.adapter = MapCategoryAdapter(
+                                context,
+                                mapCategories,
+                                { category, isChecked ->
+                                    // Pass the state change to the MainActivity via the interface
+                                    categoryCheckedListener?.onCategoryChecked(category, isChecked)
+                                },
+                                { mapObject ->
+                                    categoryMapObjectClickedListener?.categoryMapObjectClicked(mapObject)
+                                }
+                            )
+                        }
+                    }
+                    is State.NoData -> {}
+                    is State.Error -> {}
+                    State.Loading -> {}
+                }
+            }
+        }
+    }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -83,12 +108,8 @@ class CategoryScrollingFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(mapObjectsByCategory: ArrayList<MapObjectsByCategory>): CategoryScrollingFragment {
-            val fragment = CategoryScrollingFragment()
-            val args = Bundle()
-            args.putSerializable("MAP_OBJECTS_BY_CATEGORY", mapObjectsByCategory)
-            fragment.arguments = args
-            return fragment
+        fun newInstance(): CategoryScrollingFragment {
+            return CategoryScrollingFragment()
         }
     }
 

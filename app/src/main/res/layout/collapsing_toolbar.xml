@@ -21,7 +21,7 @@
         <sk.sivy_vlk.zazipovazie.custom_view.photo.PhotoToolbarView
             android:id="@+id/photoView"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             app:layout_collapseMode="parallax" />
 
