@@ -17,3 +17,5 @@ gradle.properties
 secret.properties
 app/src/main/assets/map_downloaded.kmz
 /.idea
+/app/release
+/app/release

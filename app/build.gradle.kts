@@ -1,44 +1,16 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
-android {
-    namespace = "sk.sivy_vlk.zazipovazie"
-    compileSdk = 34
-
-    defaultConfig {
-        applicationId = "sk.sivy_vlk.zazipovazie"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 5
-        versionName = "1.0.2"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        android.buildFeatures.buildConfig = true
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures {
-        viewBinding = true
-    }
-
+val secretPropertiesFile = rootProject.file("secret.properties")
+val secretProperties = Properties()
+if (secretPropertiesFile.exists()) {
+    secretProperties.load(FileInputStream(secretPropertiesFile))
 }
 
 secrets {
@@ -55,6 +27,51 @@ secrets {
     ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
     ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
 }
+
+
+android {
+    namespace = "sk.sivy_vlk.zazipovazie"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "sk.sivy_vlk.zazipovazie"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 5
+        versionName = "1.0.2"
+
+        manifestPlaceholders["MAPS_API_KEY"] = secretProperties.getProperty("MAPS_API_KEY", "")
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        android.buildFeatures.buildConfig = true
+        debug {
+            manifestPlaceholders["MAPS_API_KEY"] = secretProperties.getProperty("DEBUG_MAPS_API_KEY", "")
+        }
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            manifestPlaceholders["MAPS_API_KEY"] = secretProperties.getProperty("RELEASE_MAPS_API_KEY", "")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+    buildFeatures {
+        viewBinding = true
+    }
+
+}
+
 
 dependencies {
 
@@ -83,6 +100,7 @@ dependencies {
 
     // Photos
     implementation(libs.picasso)
+    implementation(libs.glide)
 
     implementation(libs.androidx.cardview)
 }

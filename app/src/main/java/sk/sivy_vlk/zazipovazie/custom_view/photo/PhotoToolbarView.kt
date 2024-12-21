@@ -20,7 +20,6 @@ class PhotoToolbarView @JvmOverloads constructor(
 
     private val viewPager: ViewPager2
     private val tabLayout: TabLayout
-//    private val loadingView: ProgressBar
 
     init {
         View.inflate(context, R.layout.photo_toolbar_view, this)
@@ -36,11 +35,7 @@ class PhotoToolbarView @JvmOverloads constructor(
         val adapter = PhotoPagerAdapter(fragmentManager, lifecycle, imageUrls)
 //        val adapter = PhotoPagerAdapter(context, imageUrls) { hideLoadingView() }
         viewPager.adapter = adapter
-        TabLayoutMediator(tabLayout, viewPager) { tab, position -> }.attach()
+        TabLayoutMediator(tabLayout, viewPager) { _, _ -> }.attach()
     }
 
-    private fun hideLoadingView() {
-        // Hide loading view when images are loaded
-//        loadingView.visibility = View.GONE
-    }
 }
