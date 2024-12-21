@@ -298,7 +298,7 @@ class MapActivityViewModel(private val app: Application,
             _mapCategories[mapCategoryIndex].mapObjects =
                 mapObjects.filter { it.category == category }.sortedBy { it.name }
         }
-        _mapCategories.sortBy { it.name }
+//        _mapCategories.sortBy { it.name }
     }
 
     private fun extractKMZ(kmzFile: InputStream) {
