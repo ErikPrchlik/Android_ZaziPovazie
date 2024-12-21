@@ -77,11 +77,11 @@ class MapObjectDetailActivity : AppCompatActivity() {
         }
 
         binding.appBarLayout.navigation.setOnClickListener {
-            openMapActivity(mapObject)
+            openMapApplication(mapObject)
         }
 
         binding.placeObjectContent.mapObjectAddressTW.setOnClickListener {
-            openMapActivity(mapObject)
+            openMapApplication(mapObject)
         }
 
         binding.appBarLayout.back.setOnClickListener {
@@ -89,16 +89,37 @@ class MapObjectDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun openMapActivity(mapObject: MapObject?) {
-        val index = mapObject!!.coordinates.size.div(2)
-        val uri = String.format(Locale.ENGLISH, "geo:%f,%f",
-            mapObject.coordinates[0].latitude, mapObject.coordinates[index].longitude)
+    private fun openMapApplication(mapObject: MapObject?) {
+        if (mapObject == null || mapObject.coordinates.isEmpty()) {
+            Toast.makeText(this, "Invalid map object", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Get the first coordinate (or a specific one)
+        val index = mapObject.coordinates.size.div(2)
+        val coordinate = mapObject.coordinates[index]
+        val latitude = coordinate.latitude
+        val longitude = coordinate.longitude
+
+        // Construct the Google Maps URI with query and zoom level
+        val uri = String.format(
+            Locale.ENGLISH,
+            "geo:%f,%f?q=%f,%f(%s)&z=15",
+            latitude,
+            longitude,
+            latitude,
+            longitude,
+            Uri.encode(mapObject.name) // Encode the name to handle spaces or special characters
+        )
+
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+        intent.setPackage("com.google.android.apps.maps") // Ensure it opens specifically in Google Maps
+
         if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent);
+            startActivity(intent)
         } else {
-            // Optionally show a message if no app can handle the intent
-            Toast.makeText(this, "No map application found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No map application found", Toast.LENGTH_SHORT).show()
         }
     }
+
 }
